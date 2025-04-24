@@ -12,7 +12,7 @@ from src.hypnos.utils import training_args
 if __name__ == '__main__':
     torch.set_float32_matmul_precision('medium')
     args = training_args()
-    config = yaml.load(open("./config.yml", "r"), Loader=yaml.FullLoader)
+    config = yaml.load(open(args.config, "r"), Loader=yaml.FullLoader)
 
     logger = get_logger(config['logs']['log_dir'], config['logs']['log_level'])
 
@@ -25,8 +25,8 @@ if __name__ == '__main__':
 
     model = HypnosNet()
     optimizer = torch.optim.Adam(model.parameters(), lr=config['train']["lr"])
-    eeg_dataset = get_dataset([f"{config['data']['processed_data_dir']}/{i}.pkl" for i in config['data']['keymap']], config)
-    train_loader, val_loader, test_loader = get_loader(eeg_dataset, config)
+    eeg_dts = get_dataset([f"{config['data']['processed_data_dir']}/{i}.pkl" for i in config['data']['keymap']], config)
+    train_loader, val_loader, test_loader = get_loader(eeg_dts, config)
 
     # setup to fabric
     model, optimizer = fabric.setup(model, optimizer)
