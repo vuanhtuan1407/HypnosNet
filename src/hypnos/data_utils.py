@@ -1,13 +1,10 @@
-import os
-import joblib
-
-import numpy as np
-from torch.utils.data import Subset
-
-from tqdm import tqdm
 from datetime import datetime
 
-from params import DATA_DIR
+import joblib
+import numpy as np
+from torch.utils.data import Subset
+from tqdm import tqdm
+
 from src.hypnos.params import LB_DICT, LB_VEC
 
 
