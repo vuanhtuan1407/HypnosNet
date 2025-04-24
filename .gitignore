@@ -95,3 +95,6 @@ __pypackages__/
 
 # Data
 data/
+
+# Config
+*.yml
