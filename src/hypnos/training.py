@@ -2,20 +2,29 @@ import torch
 from tqdm import tqdm
 
 
-def fit(fabric, model, train_loader, val_loader, optimizer, config):
+def fit(fabric, model, train_loader, val_loader, optimizer, logger, config):
     model.train()
-    for epoch in range(config['epochs']):
-        print(f'Epoch {epoch}')
-        total_loss = 0
-        for batch_idx, batch in tqdm(enumerate(train_loader), total=len(train_loader), desc=f'Training'):
+    for epoch in range(config['train']['epochs']):
+        logger.info(f'Epoch {epoch + 1}/{config["train"]["epochs"]}')
+        total_loss = total_samples = 0
+        train_tqdm = tqdm(
+            enumerate(train_loader),
+            total=len(train_loader),
+            desc=f'Training',
+            disable=config['train']['disable_tqdm']
+        )
+        for batch_idx, batch in train_tqdm:
             optimizer.zero_grad()
             sns, lbs_phs, dur, _ = batch
             z, lbs_phs_hat = model(sns)
-            loss = torch.nn.functional.cross_entropy(lbs_phs_hat, lbs_phs)
+            lbs_phs_hat = torch.nn.functional.log_softmax(lbs_phs_hat, dim=1)
+            loss = torch.nn.functional.kl_div(lbs_phs_hat, lbs_phs, reduction='batchmean')
             fabric.backward(loss)
             optimizer.step()
             total_loss += loss.item()
-        print(f'Epoch {epoch} loss: {total_loss / len(train_loader)}')
+            total_samples += lbs_phs.shape[0]
+            train_tqdm.set_postfix(loss=f'{total_loss / total_samples:.4f}')
+        logger.info(f'Epoch {epoch + 1}/{config["train"]["epochs"]} - Train Loss: {total_loss / total_samples:.4f}')
 
 
 def test():

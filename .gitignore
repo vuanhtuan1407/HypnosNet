@@ -66,6 +66,7 @@ htmlcov/
 .vscode/
 
 # Logs
+logs/
 *.log
 *.log.*
 

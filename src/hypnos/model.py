@@ -18,8 +18,8 @@ class HypnosNet(nn.Module):
 
     def forward(self, x):
         x = self.encoder(x)
-        cls = torch.nn.functional.softmax(self.classifier(x), dim=1)
-        return x, cls
+        cls_logits = self.classifier(x)
+        return x, cls_logits
 
 
 class Encoder(nn.Module):

@@ -1,7 +1,16 @@
-batch_size: 64
-lr: 0.001
-epochs: 100
-accelerator: 'cuda'
-devices: 'auto'
+data:
+  processed_data_dir: '../../data/processed'
+  keymap: [ 'K3_EEG3_11h', 'RS2_EEG1_23 hr', 'S1_EEG1_23 hr' ]
 
-seed: 42
+train:
+  seed: 42
+  batch_size: 64
+  lr: 0.0001
+  epochs: 100
+  accelerator: 'cuda'
+  devices: 'auto'
+  disable_tqdm: False
+
+logs:
+  log_dir: '../../logs'
+  log_level: 'DEBUG'

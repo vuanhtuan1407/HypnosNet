@@ -8,19 +8,19 @@ def get_loader(dataset, config):
 
     train_loader = DataLoader(
         dataset=train_set,
-        batch_size=config['batch_size'],
+        batch_size=config['train']['batch_size'],
         shuffle=False,
         drop_last=True
     )
     val_loader = DataLoader(
         dataset=val_set,
-        batch_size=config['batch_size'],
+        batch_size=config['train']['batch_size'],
         shuffle=False,
         drop_last=True
     )
     test_loader = DataLoader(
         dataset=test_set,
-        batch_size=config['batch_size'],
+        batch_size=config['train']['batch_size'],
         shuffle=False,
         drop_last=True
     )

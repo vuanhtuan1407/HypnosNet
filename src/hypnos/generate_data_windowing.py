@@ -1,4 +1,3 @@
-import argparse
 import math
 
 import numpy as np
@@ -6,6 +5,7 @@ import yaml
 from tqdm import tqdm
 
 from src.hypnos.data_utils import load_data, dump_data, generate_lbs
+from src.hypnos.utils import data_args
 
 
 def generate_data_windowing(source, win_length=4, stride=0.5):
@@ -51,10 +51,7 @@ def generate_data_windowing(source, win_length=4, stride=0.5):
 
 
 if __name__ == '__main__':
-    args = argparse.ArgumentParser()
-    args.add_argument("--data_config", type=str, default="./data_config.yml")
-    args = args.parse_args()
-
+    args = data_args()
     config = yaml.load(open(args.data_config, "r"), Loader=yaml.FullLoader)
 
     raw_data_dir = config['raw_data_dir']
