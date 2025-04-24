@@ -25,7 +25,7 @@ if __name__ == '__main__':
 
     model = HypnosNet()
     optimizer = torch.optim.Adam(model.parameters(), lr=config['train']["lr"])
-    eeg_dataset = get_dataset(['../../data/processed/K3_EEG3_11h.pkl'], config)
+    eeg_dataset = get_dataset([f"{config['data']['processed_data_dir']}/{i}.pkl" for i in config['data']['keymap']], config)
     train_loader, val_loader, test_loader = get_loader(eeg_dataset, config)
 
     # setup to fabric
