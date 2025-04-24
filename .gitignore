@@ -1,0 +1,96 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Pipenv / Poetry / venv
+.venv/
+venv/
+ENV/
+env/
+env.bak/
+venv.bak/
+poetry.lock
+Pipfile.lock
+
+# PyInstaller
+# Usually creates a dist folder and build artifacts
+*.manifest
+*.spec
+
+# Pyre / mypy / Pyright / typing
+.mypy_cache/
+.pyre/
+.pytype/
+
+# pytest
+.cache/
+.pytest_cache/
+
+# Coverage reports
+coverage.xml
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+
+# Jupyter / notebooks
+.ipynb_checkpoints/
+*.ipynb
+
+# PyCharm
+.idea/
+
+# VSCode
+.vscode/
+
+# Logs
+*.log
+*.log.*
+
+# Test output
+test-results/
+nosetests.xml
+junit-*.xml
+
+# CI/CD
+*.DS_Store
+*.swp
+*.bak
+
+# Mac / Linux
+.DS_Store
+Thumbs.db
+
+# Local configuration
+*.env
+.env.*
+
+# Wheel / pyproject
+*.whl
+pip-wheel-metadata/
+__pypackages__/
+
+# Data
+data/
