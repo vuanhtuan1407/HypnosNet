@@ -1,7 +1,7 @@
 import joblib
 import numpy as np
-from torch.utils.data import Dataset
 import torch
+from torch.utils.data import Dataset, ConcatDataset
 
 
 class EEGDataset(Dataset):
@@ -20,13 +20,21 @@ class EEGDataset(Dataset):
         self.trans_len = torch.tensor(np.array(trans_len), dtype=torch.float32)
 
     def __len__(self):
-        return len(self.data)
+        return len(self.eeg)
 
     def __getitem__(self, idx):
         return self.eeg[idx], self.lbs_phs[idx], self.dur[idx], self.trans_len[idx]
 
     def get_data(self):
         return self.data, self.lbs
+
+
+def get_dataset(files, config):
+    dts = []
+    for file in files:
+        dt = EEGDataset(file)
+        dts.append(dt)
+    return ConcatDataset(dts)
 
 
 if __name__ == "__main__":

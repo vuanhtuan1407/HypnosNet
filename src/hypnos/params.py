@@ -1,5 +1,3 @@
-DATA_DIR = '../../data'
-
 LB_DICT = {
     # certainties
     'W': 0,

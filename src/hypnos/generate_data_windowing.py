@@ -1,7 +1,9 @@
+import argparse
 import math
-from tqdm import tqdm
 
 import numpy as np
+import yaml
+from tqdm import tqdm
 
 from src.hypnos.data_utils import load_data, dump_data, generate_lbs
 
@@ -34,7 +36,8 @@ def generate_data_windowing(source, win_length=4, stride=0.5):
         if len(lb_phs) == 1:
             lbs_pre.append(([(lb_phs[0], np.float32(4.0))], 0))  # ([(lb_phase, lb_duration)], is_trans_point)
         else:
-            trans_point = np.arange(math.ceil(s_idx * 0.125) * 4, math.floor(e_idx * 0.125) * 4 + 1e-9, 4, dtype=np.int32)[0]
+            trans_point = \
+                np.arange(math.ceil(s_idx * 0.125) * 4, math.floor(e_idx * 0.125) * 4 + 1e-9, 4, dtype=np.int32)[0]
             if lb_phs[0] % 3 == lb_phs[1] % 3:
                 lbs_pre.append(([(lb_phs[0], np.float32(trans_point - s_idx * 0.5)),
                                  (lb_phs[1], np.float32(e_idx * 0.5 - trans_point))], 0))
@@ -48,18 +51,28 @@ def generate_data_windowing(source, win_length=4, stride=0.5):
 
 
 if __name__ == '__main__':
-    sources = [
-        'K3_EEG3_11h',
-        'RS2_EEG1_23 hr',
-        'S1_EEG1_23 hr'
-    ]
+    args = argparse.ArgumentParser()
+    args.add_argument("--data_config", type=str, default="./data_config.yml")
+    args = args.parse_args()
 
-    for source in sources:
+    config = yaml.load(open(args.data_config, "r"), Loader=yaml.FullLoader)
+
+    raw_data_dir = config['raw_data_dir']
+    processed_data_dir = config['processed_data_dir']
+
+    source_ids = config['keymap']
+
+    for source_id in source_ids:
+        source = {
+            'signal': f'{raw_data_dir}/raw_{source_id}.txt',
+            'label': f'{raw_data_dir}/{source_id}.txt',
+        }
+
         sns, lbs, lbs_pre = generate_data_windowing(source)
         print(sns.shape, lbs[0])
         if sns is not None and lbs is not None:
-            print(f"Dumping at {source}.pkl and {source}_pre.pkl")
-            dump_data(sns, lbs, target=source)
-            dump_data(sns, lbs_pre, target=f'{source}_pre')
+            print(f"Dumping target")
+            dump_data(sns, lbs, target=f'{processed_data_dir}/{source}.pkl')
+            dump_data(sns, lbs_pre, target=f'{processed_data_dir}/{source}_pre.pkl')
         else:
             print(f'Chunking interrupt. {source} has no data!')

@@ -7,13 +7,13 @@ from torch.utils.data import Subset
 from tqdm import tqdm
 from datetime import datetime
 
-from config import DATA_DIR
-from src.hypnos.config import LB_DICT, LB_VEC
+from params import DATA_DIR
+from src.hypnos.params import LB_DICT, LB_VEC
 
 
 def load_data(source):
-    signal_file = os.path.join(DATA_DIR, 'raw', f'raw_{source}.txt')
-    label_file = os.path.join(DATA_DIR, 'raw', f'{source}.txt')
+    signal_file = source['signal']
+    label_file = source['label']
 
     dts, sns, lbs = [], [], []
 
@@ -53,7 +53,7 @@ def load_data(source):
 
 
 def dump_data(sns, lbs, target):
-    joblib.dump((sns, lbs), os.path.join(DATA_DIR, 'processed', f'{target}.pkl'))
+    joblib.dump((sns, lbs), target)
 
 
 def chunk_signal(source, chunk_size=50):
@@ -103,9 +103,11 @@ def dt2ms(dt, offset=946659600000, ftype='signal'):
 def split_train_val_test(dataset, ratio=(0.6, 0.2, 0.2)):
     total_size = len(dataset)
     indices = list(range(len(dataset)))
-    train_ids = indices[:ratio[0] * total_size]
-    val_ids = indices[ratio[0] * total_size: (ratio[0] + ratio[1]) * total_size]
-    test_ids = indices[(ratio[0] + ratio[1]) * total_size:]
+    train_end = int(ratio[0] * total_size)
+    val_end = int((ratio[0] + ratio[1]) * total_size)
+    train_ids = indices[:train_end]
+    val_ids = indices[train_end:val_end]
+    test_ids = indices[val_end:]
     return Subset(dataset, train_ids), Subset(dataset, val_ids), Subset(dataset, test_ids), train_ids, val_ids, test_ids
 
 
