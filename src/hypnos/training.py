@@ -1,3 +1,4 @@
+import torch
 from tqdm import tqdm
 
 from src.hypnos.train_utils import cal_kl_mse_cos_entropy_loss
@@ -20,6 +21,12 @@ def fit(fabric, model, train_loader, val_loader, optimizer, logger, config):
             z, lbs_phs_hat = model(sns)
             loss = cal_kl_mse_cos_entropy_loss(lbs_phs_hat, lbs_phs, config['train']['kl_t'])
             fabric.backward(loss)
+
+            # Stuck-Survival Training (Meta AI 2022)
+            for p in model.parameters():
+                if p.grad is not None:
+                    p.grad += torch.randn_like(p.grad) * config['train'].get('sst_nosie', 1e-4)
+
             optimizer.step()
             total_loss += loss.item()
             total_samples += lbs_phs.shape[0]
