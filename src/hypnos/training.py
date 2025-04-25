@@ -49,7 +49,7 @@ def fit(fabric, model, train_loader, val_loader, optimizer, logger, config):
                 loss = cal_kl_mse_cos_entropy_loss(lbs_phs_hat, lbs_phs, config['train']['kl_t'])
 
                 if batch_idx == 0:
-                    logger.debug(f'lbs_phs_hat: {torch.softmax(lbs_phs_hat, dim=1)}')
+                    logger.debug(f'delta_lbs_phs: {torch.sub(lbs_phs, torch.softmax(lbs_phs_hat, dim=1))}')
 
                 val_loss += loss.item()
                 val_samples += lbs_phs.shape[0]
