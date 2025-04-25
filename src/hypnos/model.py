@@ -3,14 +3,14 @@ from torch import nn
 
 
 class HypnosNet(nn.Module):
-    def __init__(self, win_len=256, hop_len=64, dropout=0.2, cnn_outdim=1, emb_dim=128):
+    def __init__(self, win_len=256, hop_len=64, dropout=0.1, cnn_outdim=1, emb_dim=128):
         super().__init__()
         self.encoder = Encoder(win_len, hop_len, dropout, emb_dim, cnn_outdim)
 
         self.classifier = nn.Sequential(
             nn.Linear(emb_dim, emb_dim * 2),
             nn.ReLU(),
-            nn.Dropout(p=dropout),
+            # nn.Dropout(p=dropout),
             nn.Linear(emb_dim * 2, 3),
             # nn.ReLU(),
             nn.Dropout(p=dropout)
@@ -23,7 +23,7 @@ class HypnosNet(nn.Module):
 
 
 class Encoder(nn.Module):
-    def __init__(self, win_len=256, hop_len=64, dropout=0.2, emb_dim=128, cnn_outdim=1):
+    def __init__(self, win_len=256, hop_len=64, dropout=0.1, emb_dim=128, cnn_outdim=1):
         super().__init__()
         self.win_len = win_len
         self.hop_len = hop_len
@@ -66,10 +66,10 @@ class Encoder(nn.Module):
         self.fc = nn.Sequential(
             nn.Linear(32 * 4 * cnn_outdim, 32 * 4 * cnn_outdim * 2),
             nn.ReLU(),
-            nn.Dropout(p=dropout),
+            # nn.Dropout(p=dropout),
             nn.Linear(32 * 4 * cnn_outdim * 2, 32 * 4 * cnn_outdim * 4),
             nn.ReLU(),
-            nn.Dropout(p=dropout),
+            # nn.Dropout(p=dropout),
             nn.Linear(32 * 4 * cnn_outdim * 4, emb_dim),
             # nn.ReLU(),
             nn.Dropout(p=dropout),
@@ -85,12 +85,13 @@ class Encoder(nn.Module):
             normalized=False,
             onesided=True
         )
-        z = torch.abs(z)
+        z = torch.log1p(torch.abs(z))
         z = z.unsqueeze(1)
-        z = self.conv1(z) + z
+        # z = z[:, :, 50, :]
+        z = self.conv1(z)
         z = self.maxpool1(z)
         z = self.p_conv1(z)
-        z = self.conv2(z) + z
+        z = self.conv2(z)
         z = self.maxpool2(z)
         z = self.p_conv2(z)
         z = z.reshape(z.shape[0], -1)
