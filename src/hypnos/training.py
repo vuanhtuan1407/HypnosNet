@@ -25,7 +25,7 @@ def fit(fabric, model, train_loader, val_loader, optimizer, logger, config):
             # Stuck-Survival Training (Meta AI 2022)
             for n, p in model.named_parameters():
                 if p.grad is not None:
-                    p.grad += torch.randn_like(p.grad) * config['train'].get('sst_noise', 1e-2)
+                    p.grad += torch.randn_like(p.grad) * config['train'].get('sst_noise', 1e-4)
                     # logger.debug(f'Gradient norm after SST of {n}: {p.grad.norm().item():.4f}')
 
             optimizer.step()
@@ -48,8 +48,8 @@ def fit(fabric, model, train_loader, val_loader, optimizer, logger, config):
                 z, lbs_phs_hat = model(sns)
                 loss = cal_kl_mse_cos_entropy_loss(lbs_phs_hat, lbs_phs, config['train']['kl_t'])
 
-                if epoch == 0 and batch_idx == 0:
-                    logger.debug(f'lbs_phs_hat: {lbs_phs_hat}')
+                if batch_idx == 0:
+                    logger.debug(f'lbs_phs_hat: {torch.softmax(lbs_phs_hat, dim=1)}')
 
                 val_loss += loss.item()
                 val_samples += lbs_phs.shape[0]
