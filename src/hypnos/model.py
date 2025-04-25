@@ -12,7 +12,7 @@ class HypnosNet(nn.Module):
             nn.ReLU(),
             nn.Dropout(p=dropout),
             nn.Linear(emb_dim * 2, 3),
-            nn.ReLU(),
+            # nn.ReLU(),
             nn.Dropout(p=dropout)
         )
 
@@ -71,7 +71,7 @@ class Encoder(nn.Module):
             nn.ReLU(),
             nn.Dropout(p=dropout),
             nn.Linear(32 * 4 * cnn_outdim * 4, emb_dim),
-            nn.ReLU(),
+            # nn.ReLU(),
             nn.Dropout(p=dropout),
         )
 
