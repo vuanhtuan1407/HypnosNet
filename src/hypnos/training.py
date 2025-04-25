@@ -48,6 +48,9 @@ def fit(fabric, model, train_loader, val_loader, optimizer, logger, config):
                 z, lbs_phs_hat = model(sns)
                 loss = cal_kl_mse_cos_entropy_loss(lbs_phs_hat, lbs_phs, config['train']['kl_t'])
 
+                if epoch == 0 and batch_idx == 0:
+                    logger.debug(f'lbs_phs_hat: {lbs_phs_hat}')
+
                 val_loss += loss.item()
                 val_samples += lbs_phs.shape[0]
                 val_tqdm.set_postfix(val_loss=f'{val_loss / val_samples:.4f}')
