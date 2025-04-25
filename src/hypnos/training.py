@@ -1,5 +1,6 @@
-import torch
 from tqdm import tqdm
+
+from src.hypnos.train_utils import cal_kl_mse_loss
 
 
 def fit(fabric, model, train_loader, val_loader, optimizer, logger, config):
@@ -17,8 +18,7 @@ def fit(fabric, model, train_loader, val_loader, optimizer, logger, config):
             optimizer.zero_grad()
             sns, lbs_phs, dur, _ = batch
             z, lbs_phs_hat = model(sns)
-            lbs_phs_hat = torch.nn.functional.log_softmax(lbs_phs_hat / config['train']['kl_t'], dim=1)
-            loss = torch.nn.functional.kl_div(lbs_phs_hat, lbs_phs, reduction='batchmean') * (config['train']['kl_t'] ** 2)
+            loss = cal_kl_mse_loss(lbs_phs_hat, lbs_phs, config['train']['kl_t'])
             fabric.backward(loss)
             optimizer.step()
             total_loss += loss.item()
