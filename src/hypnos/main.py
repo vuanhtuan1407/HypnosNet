@@ -10,7 +10,7 @@ from src.hypnos.training import fit
 from src.hypnos.utils import training_args
 
 if __name__ == '__main__':
-    torch.set_float32_matmul_precision('medium')
+    torch.set_float32_matmul_precision('high')
     args = training_args()
     config = yaml.load(open(args.config, "r"), Loader=yaml.FullLoader)
 
@@ -18,7 +18,8 @@ if __name__ == '__main__':
 
     fabric = Fabric(
         accelerator=config['train']["accelerator"],
-        devices=config['train']["devices"]
+        devices=config['train']["devices"],
+        precision='32-true'
     )
     fabric.seed_everything(config['train']["seed"])
     fabric.launch()

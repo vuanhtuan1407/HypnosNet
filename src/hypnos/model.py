@@ -9,7 +9,7 @@ class HypnosNet(nn.Module):
 
         self.classifier = nn.Sequential(
             nn.Linear(emb_dim, emb_dim * 2),
-            nn.ReLU(),
+            # nn.ReLU(),
             nn.Dropout(p=dropout),
             nn.Linear(emb_dim * 2, 3),
             nn.ReLU(),
@@ -65,10 +65,10 @@ class Encoder(nn.Module):
 
         self.fc = nn.Sequential(
             nn.Linear(32 * 4 * cnn_outdim, 32 * 4 * cnn_outdim * 2),
-            nn.ReLU(),
+            # nn.ReLU(),
             nn.Dropout(p=dropout),
             nn.Linear(32 * 4 * cnn_outdim * 2, 32 * 4 * cnn_outdim * 4),
-            nn.ReLU(),
+            # nn.ReLU(),
             nn.Dropout(p=dropout),
             nn.Linear(32 * 4 * cnn_outdim * 4, emb_dim),
             nn.ReLU(),
