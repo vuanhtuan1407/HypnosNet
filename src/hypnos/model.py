@@ -9,7 +9,7 @@ class HypnosNet(nn.Module):
 
         self.classifier = nn.Sequential(
             nn.Linear(emb_dim, emb_dim * 2),
-            # nn.ReLU(),
+            nn.ReLU(),
             nn.Dropout(p=dropout),
             nn.Linear(emb_dim * 2, 3),
             nn.ReLU(),
