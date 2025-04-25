@@ -1,6 +1,6 @@
 from tqdm import tqdm
 
-from src.hypnos.train_utils import cal_kl_mse_loss
+from src.hypnos.train_utils import cal_kl_mse_cos_entropy_loss
 
 
 def fit(fabric, model, train_loader, val_loader, optimizer, logger, config):
@@ -18,7 +18,7 @@ def fit(fabric, model, train_loader, val_loader, optimizer, logger, config):
             optimizer.zero_grad()
             sns, lbs_phs, dur, _ = batch
             z, lbs_phs_hat = model(sns)
-            loss = cal_kl_mse_loss(lbs_phs_hat, lbs_phs, config['train']['kl_t'])
+            loss = cal_kl_mse_cos_entropy_loss(lbs_phs_hat, lbs_phs, config['train']['kl_t'])
             fabric.backward(loss)
             optimizer.step()
             total_loss += loss.item()
