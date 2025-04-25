@@ -26,7 +26,7 @@ def fit(fabric, model, train_loader, val_loader, optimizer, logger, config):
             for n, p in model.named_parameters():
                 if p.grad is not None:
                     p.grad += torch.randn_like(p.grad) * config['train'].get('sst_noise', 1e-2)
-                    logger.debug(f'Gradient norm after SST of {n}: {p.grad.norm().item():.4f}')
+                    # logger.debug(f'Gradient norm after SST of {n}: {p.grad.norm().item():.4f}')
 
             optimizer.step()
             total_loss += loss.item()
