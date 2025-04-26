@@ -86,7 +86,7 @@ class Encoder(nn.Module):
             onesided=True
         )
         # z = torch.log1p(torch.abs(z))
-        z = 20 * torch.log10(torch.abs(z))  # magnitude -> amplitude
+        z = 20 * torch.log10(torch.clamp(torch.abs(z), min=1e-6))  # magnitude -> amplitude
         z = z.unsqueeze(1)  # shape: [B, 1, F, T]
         z = self.conv1(z)
         z = self.maxpool1(z)
