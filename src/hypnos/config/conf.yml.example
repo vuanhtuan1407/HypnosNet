@@ -16,4 +16,4 @@ logs:
   log_dir: '../../logs'
   log_level: 'DEBUG'
 
-env_file: './config/.env'
+env_path: './config/.env'

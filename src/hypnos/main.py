@@ -16,7 +16,7 @@ if __name__ == '__main__':
     config = yaml.load(open(args.config, "r"), Loader=yaml.FullLoader)
     logger = get_logger(config['logs']['log_dir'], config['logs']['log_level'])
     try:
-        load_dotenv(config['env_file'])
+        load_dotenv(config['env_path'])
     except Exception as e:
         logger.error("File .env may not exist. Continue without loading. Error: ", e)
     fabric = Fabric(
