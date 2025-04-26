@@ -3,7 +3,7 @@ from torch import nn
 
 
 class HypnosNet(nn.Module):
-    def __init__(self, win_len=256, hop_len=64, dropout=0.1, cnn_outdim=1, emb_dim=128):
+    def __init__(self, win_len=256, hop_len=64, dropout=0.1, cnn_outdim=8, emb_dim=128):
         super().__init__()
         self.encoder = Encoder(win_len, hop_len, dropout, emb_dim, cnn_outdim)
 
@@ -33,11 +33,9 @@ class Encoder(nn.Module):
             nn.Conv2d(1, 32, kernel_size=3, padding=1),
             nn.BatchNorm2d(32),
             nn.ReLU(),
-            nn.Dropout(p=dropout),
             nn.Conv2d(32, 64, kernel_size=3, padding=1),
             nn.BatchNorm2d(64),
             nn.ReLU(),
-            nn.Dropout(p=dropout),
             nn.Conv2d(64, 1, kernel_size=3, padding=1),
             nn.BatchNorm2d(1),
             nn.ReLU(),
@@ -56,12 +54,10 @@ class Encoder(nn.Module):
             nn.Conv2d(64, 128, kernel_size=3, padding=1),
             nn.BatchNorm2d(128),
             nn.ReLU(),
-            nn.Dropout(p=dropout),
-            nn.Conv2d(128, 256, kernel_size=3, padding=1),
-            nn.BatchNorm2d(256),
+            nn.Conv2d(128, 512, kernel_size=3, padding=1),
+            nn.BatchNorm2d(512),
             nn.ReLU(),
-            nn.Dropout(p=dropout),
-            nn.Conv2d(256, 64, kernel_size=3, padding=1),
+            nn.Conv2d(512, 64, kernel_size=3, padding=1),
             nn.BatchNorm2d(64),
             nn.ReLU(),
             nn.Dropout(p=dropout)
