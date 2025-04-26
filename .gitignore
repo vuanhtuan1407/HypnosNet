@@ -69,6 +69,7 @@ htmlcov/
 logs/
 *.log
 *.log.*
+wandb
 
 # Test output
 test-results/
@@ -86,7 +87,6 @@ Thumbs.db
 
 # Local configuration
 *.env
-.env.*
 
 # Wheel / pyproject
 *.whl

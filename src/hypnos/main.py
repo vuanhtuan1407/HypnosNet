@@ -1,21 +1,24 @@
+from dotenv import load_dotenv
+
 import torch
 import yaml
 from lightning.fabric import Fabric
 
-from src.hypnos.data_loader import get_loader
 from src.hypnos.dataset import get_dataset
 from src.hypnos.logger import get_logger
 from src.hypnos.model import HypnosNet
-from src.hypnos.training import fit
+from src.hypnos.training import train_hypnos
 from src.hypnos.utils import training_args
 
 if __name__ == '__main__':
     torch.set_float32_matmul_precision('high')
     args = training_args()
     config = yaml.load(open(args.config, "r"), Loader=yaml.FullLoader)
-
     logger = get_logger(config['logs']['log_dir'], config['logs']['log_level'])
-
+    try:
+        load_dotenv(config.get('env_file', './config/.env'))
+    except Exception as e:
+        logger.error("File .env may not exist. Continue without loading. Error: ", e)
     fabric = Fabric(
         accelerator=config['train']["accelerator"],
         devices=config['train']["devices"],
@@ -23,14 +26,6 @@ if __name__ == '__main__':
     )
     fabric.seed_everything(config['train']["seed"])
     fabric.launch()
-
     model = HypnosNet()
-    optimizer = torch.optim.Adam(model.parameters(), lr=config['train']["lr"])
     eeg_dts = get_dataset([f"{config['data']['processed_data_dir']}/{i}.pkl" for i in config['data']['keymap']], config)
-    train_loader, val_loader, test_loader = get_loader(eeg_dts, config)
-
-    # setup to fabric
-    model, optimizer = fabric.setup(model, optimizer)
-    train_loader, val_loader, test_loader = fabric.setup_dataloaders(train_loader, val_loader, test_loader)
-
-    fit(fabric, model, train_loader, val_loader, optimizer, logger, config)
+    train_hypnos(fabric, model, eeg_dts, logger, config)
