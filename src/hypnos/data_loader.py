@@ -1,10 +1,11 @@
 from torch.utils.data import DataLoader
 
-from src.hypnos.data_utils import split_train_val_test
+from src.hypnos.data_utils import split_train_val_test, split_train_val_test_random
 
 
 def get_loader(dataset, config):
-    train_set, val_set, test_set, _, _, _ = split_train_val_test(dataset)
+    # train_set, val_set, test_set, _, _, _ = split_train_val_test(dataset)
+    train_set, val_set, test_set, _, _, _ = split_train_val_test_random(dataset)
 
     train_loader = DataLoader(
         dataset=train_set,

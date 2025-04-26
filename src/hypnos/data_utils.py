@@ -107,6 +107,17 @@ def split_train_val_test(dataset, ratio=(0.6, 0.2, 0.2)):
     test_ids = indices[val_end:]
     return Subset(dataset, train_ids), Subset(dataset, val_ids), Subset(dataset, test_ids), train_ids, val_ids, test_ids
 
+def split_train_val_test_random(dataset, ratio=(0.6, 0.2, 0.2)):
+    total_size = len(dataset)
+    indices = list(range(total_size))
+    np.random.shuffle(indices)
+    train_end = int(ratio[0] * total_size)
+    val_end = int((ratio[0] + ratio[1]) * total_size)
+    train_ids = indices[:train_end]
+    val_ids = indices[train_end:val_end]
+    test_ids = indices[val_end:]
+    return Subset(dataset, train_ids), Subset(dataset, val_ids), Subset(dataset, test_ids), train_ids, val_ids, test_ids
+
 
 if __name__ == "__main__":
     print(generate_lbs([([(np.int32(1), np.float32(2.5)), (np.int32(3), np.float32(1.5))], 1)]))

@@ -29,33 +29,41 @@ class Encoder(nn.Module):
 
         # CNN block 1 (no activation)
         self.conv1 = nn.Sequential(
-            nn.Conv2d(1, 256, kernel_size=3, padding=1),
-            nn.BatchNorm2d(256),
-
-            nn.Conv2d(256, 512, kernel_size=3, padding=1),
-            nn.BatchNorm2d(512),
-
-            nn.Conv2d(512, 1, kernel_size=3, padding=1),
-            nn.BatchNorm2d(1)
+            nn.Conv2d(1, 32, kernel_size=3, padding=1),
+            nn.BatchNorm2d(64),
+            nn.ReLU(),
+            nn.Dropout(p=dropout),
+            nn.Conv2d(64, 128, kernel_size=3, padding=1),
+            nn.BatchNorm2d(128),
+            nn.ReLU(),
+            nn.Dropout(p=dropout),
+            nn.Conv2d(128, 1, kernel_size=3, padding=1),
+            nn.BatchNorm2d(1),
+            nn.ReLU(),
+            nn.Dropout(p=dropout)
         )
 
         self.maxpool1 = nn.MaxPool2d(kernel_size=2, stride=2)
 
         self.p_conv1 = nn.Sequential(
-            nn.Conv2d(1, 256, kernel_size=1),
+            nn.Conv2d(1, 64, kernel_size=1),
             nn.BatchNorm2d(256)
         )
 
         # CNN block 2 (no activation)
         self.conv2 = nn.Sequential(
-            nn.Conv2d(256, 1024, kernel_size=3, padding=1),
-            nn.BatchNorm2d(1024),
-
-            nn.Conv2d(1024, 2048, kernel_size=3, padding=1),
-            nn.BatchNorm2d(2048),
-
-            nn.Conv2d(2048, 256, kernel_size=3, padding=1),
-            nn.BatchNorm2d(256)
+            nn.Conv2d(64, 128, kernel_size=3, padding=1),
+            nn.BatchNorm2d(128),
+            nn.ReLU(),
+            nn.Dropout(p=dropout),
+            nn.Conv2d(128, 512, kernel_size=3, padding=1),
+            nn.BatchNorm2d(512),
+            nn.ReLU(),
+            nn.Dropout(p=dropout),
+            nn.Conv2d(512, 256, kernel_size=3, padding=1),
+            nn.BatchNorm2d(256),
+            nn.ReLU(),
+            nn.Dropout(p=dropout)
         )
 
         self.maxpool2 = nn.MaxPool2d(kernel_size=2, stride=2)
@@ -84,7 +92,7 @@ class Encoder(nn.Module):
             onesided=True
         )
         # z = torch.log1p(torch.abs(z))
-        z = 20 * torch.log10(torch.clamp(torch.abs(z), min=1e-6))  # magnitude -> amplitude
+        z = 20 * torch.log10(torch.clamp(torch.abs(z), min=1e-6))  # magnitude -> amplitude (dB)
         z = z.unsqueeze(1)  # shape: [B, 1, F, T]
         z = torch.nn.functional.relu(self.conv1(z) + z)
         z = self.maxpool1(z)
@@ -92,7 +100,6 @@ class Encoder(nn.Module):
         z = torch.nn.functional.relu(self.conv2(z) + z)
         z = self.maxpool2(z)
         z = self.p_conv2(z)
-
         z = z.reshape(z.shape[0], -1)
         z = self.fc(z)
         return z
