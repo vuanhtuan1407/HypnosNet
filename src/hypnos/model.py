@@ -69,7 +69,7 @@ class Encoder(nn.Module):
         self.maxpool2 = nn.MaxPool2d(kernel_size=2, stride=2)
 
         self.p_conv2 = nn.Sequential(
-            nn.Conv2d(256, cnn_outdim, kernel_size=1),
+            nn.Conv2d(64, cnn_outdim, kernel_size=1),
             nn.BatchNorm2d(cnn_outdim)
         )
 
