@@ -82,12 +82,12 @@ class Encoder(nn.Module):
             hop_length=self.hop_len,
             window=torch.hamming_window(self.win_len, device=x.device),
             return_complex=True,
-            normalized=False,
+            normalized=True,
             onesided=True
         )
         z = torch.log1p(torch.abs(z))
+        z = 20 * torch.log10(torch.abs(z))  # magnitude -> amplitude
         z = z.unsqueeze(1)  # shape: [B, 1, F, T]
-
         z = self.conv1(z)
         z = self.maxpool1(z)
         z = self.p_conv1(z)
