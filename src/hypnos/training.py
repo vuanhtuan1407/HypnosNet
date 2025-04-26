@@ -46,7 +46,7 @@ def fit(fabric, model, train_loader, val_loader, optimizer, logger, config):
             for batch_idx, batch in val_tqdm:
                 sns, lbs_phs, dur, _ = batch
                 z, lbs_phs_hat = model(sns)
-                loss = cal_kl_mse_cos_entropy_loss(lbs_phs_hat, lbs_phs, config['train']['kl_t'])
+                loss = torch.nn.functional.mse_loss(torch.softmax(lbs_phs_hat, dim=1), lbs_phs)
 
                 if batch_idx == 0:
                     logger.debug(f'delta_lbs_phs: {torch.sub(lbs_phs, torch.softmax(lbs_phs_hat, dim=1))}')

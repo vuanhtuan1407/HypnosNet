@@ -8,10 +8,11 @@ class HypnosNet(nn.Module):
         self.encoder = Encoder(win_len, hop_len, dropout, emb_dim, cnn_outdim)
 
         self.classifier = nn.Sequential(
-            nn.Linear(emb_dim, emb_dim * 2),
+            nn.Linear(emb_dim, emb_dim * 4),
             nn.ReLU(),
             nn.Dropout(p=dropout),
-            nn.Linear(emb_dim * 2, 3),
+            nn.Linear(emb_dim * 4, 3),
+            nn.ReLU()
         )
 
     def forward(self, x):
