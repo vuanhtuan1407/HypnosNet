@@ -34,7 +34,7 @@ class Encoder(nn.Module):
             nn.ReLU(),
             nn.Dropout(p=dropout),
             nn.Conv2d(32, 64, kernel_size=3, padding=1),
-            nn.BatchNorm2d(128),
+            nn.BatchNorm2d(64),
             nn.ReLU(),
             nn.Dropout(p=dropout),
             nn.Conv2d(64, 1, kernel_size=3, padding=1),
@@ -47,7 +47,7 @@ class Encoder(nn.Module):
 
         self.p_conv1 = nn.Sequential(
             nn.Conv2d(1, 64, kernel_size=1),
-            nn.BatchNorm2d(256)
+            nn.BatchNorm2d(64)
         )
 
         # CNN block 2 (no activation)
