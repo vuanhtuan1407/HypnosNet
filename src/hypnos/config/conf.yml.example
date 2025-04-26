@@ -1,6 +1,6 @@
 data:
   processed_data_dir: '../../data/processed'
-  keymap: [ 'K3_EEG3_11h' ]
+  keymap: [ 'K3_EEG3_11h', 'RS2_EEG1_23 hr', 'S1_EEG1_23 hr' ]
 
 train:
   seed: 42
