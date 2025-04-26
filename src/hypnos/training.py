@@ -59,7 +59,7 @@ def fit(fabric, model, train_loader, val_loader, optimizer, logger, config):
             truths = torch.cat(truths, dim=0)
             log_preds = torch.nn.functional.log_softmax(preds, dim=1)
             preds = torch.nn.functional.softmax(log_preds, dim=1)
-            kl_div = torch.nn.functional.kl_div(preds, truths, reduction='batchmean')
+            kl_div = torch.nn.functional.kl_div(log_preds, truths, reduction='batchmean')
             cos_sim = torch.nn.functional.cosine_similarity(preds, truths, dim=1).mean()
             mse = torch.nn.functional.mse_loss(preds, truths)
             logger.info(
