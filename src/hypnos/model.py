@@ -56,12 +56,12 @@ class Encoder(nn.Module):
             nn.BatchNorm2d(128),
             nn.ReLU(),
             nn.Dropout(p=dropout),
-            nn.Conv2d(128, 512, kernel_size=3, padding=1),
-            nn.BatchNorm2d(512),
+            nn.Conv2d(128, 256, kernel_size=3, padding=1),
+            nn.BatchNorm2d(256),
             nn.ReLU(),
             nn.Dropout(p=dropout),
-            nn.Conv2d(512, 256, kernel_size=3, padding=1),
-            nn.BatchNorm2d(256),
+            nn.Conv2d(256, 64, kernel_size=3, padding=1),
+            nn.BatchNorm2d(64),
             nn.ReLU(),
             nn.Dropout(p=dropout)
         )
