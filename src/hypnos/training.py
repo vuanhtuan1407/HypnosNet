@@ -12,12 +12,11 @@ from src.hypnos.train_utils import cal_kl_mse_cos_entropy_loss
 def fit(fabric, model, train_loader, val_loader, optimizer, logger, config):
     model.train()
     for epoch in range(config['epochs']):
-        logger.info(f'Epoch {epoch + 1}/{config["epochs"]}')
         total_loss = total_samples = 0
         train_tqdm = tqdm(
             enumerate(train_loader),
             total=len(train_loader),
-            desc=f'Training',
+            desc=f'Training Epoch {epoch + 1}/{config["epochs"]}',
             disable=config['disable_tqdm']
         )
         for batch_idx, batch in train_tqdm:
@@ -38,28 +37,38 @@ def fit(fabric, model, train_loader, val_loader, optimizer, logger, config):
             total_samples += lbs_phs.shape[0]
             train_tqdm.set_postfix(loss=f'{total_loss / total_samples:.4f}')
         logger.info(f'Epoch {epoch + 1}/{config["epochs"]} - Train Loss: {total_loss / total_samples:.4f}')
+        wandb.log({'train/loss': total_loss / total_samples}, step=epoch)
 
         model.eval()
         val_loss = val_samples = 0
+        preds, truths = [], []
         with torch.no_grad():
             val_tqdm = tqdm(
                 enumerate(val_loader),
                 total=len(val_loader),
-                desc='Validating',
+                desc=f'Validating Epoch {epoch + 1}/{config["epochs"]}',
                 disable=config['disable_tqdm']
             )
             for batch_idx, batch in val_tqdm:
                 sns, lbs_phs, dur, _ = batch
                 z, lbs_phs_hat = model(sns)
-                loss = torch.nn.functional.kl_div(torch.softmax(lbs_phs_hat, dim=1), lbs_phs, reduction='batchmean')
+                preds.append(lbs_phs_hat)
+                truths.append(lbs_phs)
 
-                if batch_idx == 0:
-                    logger.debug(f'delta_lbs_phs: {torch.sub(lbs_phs, torch.softmax(lbs_phs_hat, dim=1))}')
-
-                val_loss += loss.item()
-                val_samples += lbs_phs.shape[0]
-                val_tqdm.set_postfix(val_loss=f'{val_loss / val_samples:.4f}')
-        logger.info(f'Epoch {epoch + 1}/{config["epochs"]} - Val Loss: {val_loss / val_samples:.4f}')
+            preds = torch.cat(preds, dim=0)
+            truths = torch.cat(truths, dim=0)
+            log_preds = torch.nn.functional.log_softmax(preds, dim=1)
+            preds = torch.nn.functional.softmax(log_preds, dim=1)
+            kl_div = torch.nn.functional.kl_div(preds, truths, reduction='batchmean')
+            cos_sim = torch.nn.functional.cosine_similarity(preds, truths, dim=1).mean()
+            mse = torch.nn.functional.mse_loss(preds, truths)
+            logger.info(
+                f'Epoch {epoch + 1}/{config["epochs"]} - '
+                f'Val KLDiv: {kl_div.item():.4f} - '
+                f'Val CosSim: {cos_sim.item():.4f} - '
+                f'Val MSE: {mse.item():.4f}'
+            )
+            wandb.log({'val/kl_div': kl_div.item(), 'val/cos_sim': cos_sim.item(), 'val/mse': mse.item()}, step=epoch)
 
 
 def test():
