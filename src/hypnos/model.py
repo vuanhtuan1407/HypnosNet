@@ -67,9 +67,7 @@ class Encoder(nn.Module):
 
         # Fully connected layers with ReLU
         self.fc = nn.Sequential(
-            nn.Linear(32 * 4 * cnn_outdim, 32 * 4 * cnn_outdim * 2),
-            nn.ReLU(),
-            nn.Linear(32 * 4 * cnn_outdim * 2, 32 * 4 * cnn_outdim * 4),
+            nn.Linear(32 * 4 * cnn_outdim, 32 * 4 * cnn_outdim * 4),
             nn.ReLU(),
             nn.Linear(32 * 4 * cnn_outdim * 4, emb_dim),
             nn.Dropout(p=dropout)
@@ -88,10 +86,10 @@ class Encoder(nn.Module):
         # z = torch.log1p(torch.abs(z))
         z = 20 * torch.log10(torch.clamp(torch.abs(z), min=1e-6))  # magnitude -> amplitude
         z = z.unsqueeze(1)  # shape: [B, 1, F, T]
-        z = self.conv1(z)
+        z = torch.nn.functional.relu(self.conv1(z) + z)
         z = self.maxpool1(z)
         z = self.p_conv1(z)
-        z = self.conv2(z)
+        z = torch.nn.functional.relu(self.conv2(z) + z)
         z = self.maxpool2(z)
         z = self.p_conv2(z)
 
