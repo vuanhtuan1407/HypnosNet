@@ -69,7 +69,7 @@ if __name__ == '__main__':
         print(sns.shape, lbs[0])
         if sns is not None and lbs is not None:
             print(f"Dumping target")
-            dump_data(sns, lbs, target=f'{processed_data_dir}/{source}.pkl')
-            dump_data(sns, lbs_pre, target=f'{processed_data_dir}/{source}_pre.pkl')
+            dump_data(sns, lbs, target=f'{processed_data_dir}/{source_id}.pkl')
+            dump_data(sns, lbs_pre, target=f'{processed_data_dir}/{source_id}_pre.pkl')
         else:
             print(f'Chunking interrupt. {source} has no data!')

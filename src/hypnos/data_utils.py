@@ -21,7 +21,7 @@ def load_data(source):
         for i, line in enumerate(data):
             if line.startswith('EpochNo'):
                 start_line = i + 1
-        for line in tqdm(data[start_line: -1], total=len(data[start_line: -1]), desc=f'{source}.txt'):
+        for line in tqdm(data[start_line: -1], total=len(data[start_line: -1]), desc=label_file):
             lb = line.split('\t')[1]
             lb_idx = LB_DICT[lb] if lb in LB_DICT else -1
             lbs.append(lb_idx)
@@ -33,7 +33,7 @@ def load_data(source):
         for i, line in enumerate(data):
             if line.startswith('Time'):
                 start_line = i + 1
-        for line in tqdm(data[start_line: -1], total=len(data[start_line: -1]), desc=f'raw_{source}.txt'):
+        for line in tqdm(data[start_line: -1], total=len(data[start_line: -1]), desc=signal_file):
             dt, eeg = line.split('\t')[:2]
             dts.append(dt)
             sns.append(eeg)
