@@ -27,7 +27,7 @@ def generate_data_windowing(source, win_length=4, stride=0.5):
     sns_pad = np.pad(sns, (1024, 1024), mode='constant', constant_values=0)
     lbs_pad = np.pad(lbs, (1, 1), mode='constant', constant_values=-1)
 
-    for i in tqdm(range(8, end_idx * 8 + 8, 1), total=end_idx * 8, desc=f'Process {source}'):
+    for i in tqdm(range(8, end_idx * 8 + 8, 1), total=end_idx * 8, desc=f'Prepare Signals & Pre-Label...'):
         s_idx = i - 4
         e_idx = i + 4
         sns_new.append(sns_pad[s_idx * 128: e_idx * 128])
@@ -68,7 +68,7 @@ if __name__ == '__main__':
         sns, lbs, lbs_pre = generate_data_windowing(source)
         print(sns.shape, lbs[0])
         if sns is not None and lbs is not None:
-            print(f"Dumping target")
+            print(f"Dumping target at {source_id}.pkl and {source_id}_pre.pkl.")
             dump_data(sns, lbs, target=f'{processed_data_dir}/{source_id}.pkl')
             dump_data(sns, lbs_pre, target=f'{processed_data_dir}/{source_id}_pre.pkl')
         else:

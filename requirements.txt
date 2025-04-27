@@ -7,3 +7,4 @@ pyyaml==6.0.2
 lightning==2.5.1
 wandb==0.19.10
 python-dotenv==1.1.0
+pandas==2.2.3

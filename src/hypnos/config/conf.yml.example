@@ -1,13 +1,13 @@
 data:
   processed_data_dir: '../../data/processed'
-  keymap: [ 'K3_EEG3_11h', 'RS2_EEG1_23 hr', 'S1_EEG1_23 hr' ]
+  keymap: [ 'K3_EEG3_11h' ]
 
 train:
   seed: 42
   batch_size: 64
   lr: 0.0005
   kl_e: 10
-  epochs: 100
+  epochs: 1
   accelerator: 'cuda'
   devices: 'auto'
   disable_tqdm: False
@@ -15,5 +15,7 @@ train:
 logs:
   log_dir: '../../logs'
   log_level: 'DEBUG'
+
+out_dir: '../../out'
 
 env_path: './config/.env'

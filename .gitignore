@@ -98,3 +98,6 @@ data/
 
 # Config
 *.yml
+
+# Out
+out/

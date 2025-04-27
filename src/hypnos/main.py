@@ -1,3 +1,5 @@
+import os
+
 from dotenv import load_dotenv
 
 import torch
@@ -19,6 +21,7 @@ if __name__ == '__main__':
         load_dotenv(config['env_path'])
     except Exception as e:
         logger.error("File .env may not exist. Continue without loading. Error: ", e)
+    os.makedirs(config['out_dir'], exist_ok=True)  # create out dir
     fabric = Fabric(
         accelerator=config['train']["accelerator"],
         devices=config['train']["devices"],
