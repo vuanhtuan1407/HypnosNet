@@ -6,7 +6,7 @@ train:
   seed: 42
   batch_size: 64
   lr: 0.0005
-  kl_t: 0.5
+  kl_e: 10
   epochs: 100
   accelerator: 'cuda'
   devices: 'auto'

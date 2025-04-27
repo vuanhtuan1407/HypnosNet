@@ -23,7 +23,8 @@ def fit(fabric, model, train_loader, val_loader, optimizer, logger, config):
             optimizer.zero_grad()
             sns, lbs_phs, dur, _ = batch
             z, lbs_phs_hat = model(sns)
-            loss = cal_kl_mse_cos_entropy_loss(lbs_phs_hat, lbs_phs, config['kl_t'])
+            kl_t = 1 + config['kl_e'] / (epoch + config['kl_e'])
+            loss = cal_kl_mse_cos_entropy_loss(lbs_phs_hat, lbs_phs, kl_t)
             fabric.backward(loss)
 
             # Stuck-Survival Training (Meta AI 2022)
