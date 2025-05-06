@@ -27,5 +27,5 @@ def process_data(data_conf):
 
 if __name__ == '__main__':
     args = data_args()
-    data_conf = yaml.load(open(args.data_conf, "r"), Loader=yaml.FullLoader)
+    data_conf = yaml.load(open(args.data_config, "r"), Loader=yaml.FullLoader)
     process_data(data_conf)
