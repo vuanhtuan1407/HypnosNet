@@ -28,7 +28,6 @@ class Encoder(nn.Module):
         self.hop_len = hop_len
         self.emb_dim = emb_dim
 
-        # CNN block 1 (no activation)
         self.conv1 = nn.Sequential(
             nn.Conv2d(1, 32, kernel_size=3, padding=1),
             nn.BatchNorm2d(32),
@@ -49,7 +48,6 @@ class Encoder(nn.Module):
             nn.BatchNorm2d(64)
         )
 
-        # CNN block 2 (no activation)
         self.conv2 = nn.Sequential(
             nn.Conv2d(64, 128, kernel_size=3, padding=1),
             nn.BatchNorm2d(128),

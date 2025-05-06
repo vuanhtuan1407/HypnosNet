@@ -8,10 +8,7 @@ from tqdm import tqdm
 from src.hypnos.params import LB_DICT, LB_VEC
 
 
-def load_data(source):
-    signal_file = source['signal']
-    label_file = source['label']
-
+def load_data(signal_file: str, label_file: str, SEP: str = '\t'):
     dts, sns, lbs = [], [], []
 
     # read label
@@ -22,7 +19,7 @@ def load_data(source):
             if line.startswith('EpochNo'):
                 start_line = i + 1
         for line in tqdm(data[start_line: -1], total=len(data[start_line: -1]), desc=label_file):
-            lb = line.split('\t')[1]
+            lb = line.split(SEP)[1]
             lb_idx = LB_DICT[lb] if lb in LB_DICT else -1
             lbs.append(lb_idx)
 
@@ -34,9 +31,9 @@ def load_data(source):
             if line.startswith('Time'):
                 start_line = i + 1
         for line in tqdm(data[start_line: -1], total=len(data[start_line: -1]), desc=signal_file):
-            dt, eeg = line.split('\t')[:2]
+            dt, eeg, emg, mot = line.split(SEP)[:4]
             dts.append(dt)
-            sns.append(eeg)
+            sns.append([eeg, emg, mot])
 
     # return np.array(sns), np.array(lbs)
 
@@ -45,6 +42,10 @@ def load_data(source):
         if dt2ms(dt) % 1000 != 0:
             print(f'Error at seg {i}: {dt} ~ {dt2ms(dt)}. Stop chunking data!')
             return None, None
+
+    # end_idx = min(len(sns) // 1024, len(lbs))
+    # sns = sns[:end_idx * 1024]
+    # lbs = lbs[:end_idx]
 
     return np.array(sns).astype(np.float32), np.array(lbs).astype(np.int32)
 
@@ -90,7 +91,10 @@ def generate_lbs(lbs):
 
 def dt2ms(dt, offset=946659600000, ftype='signal'):
     if ftype == 'signal':
-        return int(datetime.strptime(dt, '%Y.%m.%d.  %H:%M:%S.%f').timestamp()) * 1000 - offset
+        try:
+            return int(datetime.strptime(dt, '%Y.%m.%d.  %H:%M:%S.%f').timestamp()) * 1000 - offset
+        except:
+            return int(datetime.strptime(dt, '%m/%d/%Y  %H:%M:%S.%f').timestamp()) * 1000 - offset
     elif ftype == 'label':
         return int(datetime.strptime(dt, '%Y.%m.%d.  %H:%M:%S').timestamp()) * 1000 - offset
     else:
@@ -106,6 +110,7 @@ def split_train_val_test(dataset, ratio=(0.6, 0.2, 0.2)):
     val_ids = indices[train_end:val_end]
     test_ids = indices[val_end:]
     return Subset(dataset, train_ids), Subset(dataset, val_ids), Subset(dataset, test_ids), train_ids, val_ids, test_ids
+
 
 def split_train_val_test_random(dataset, ratio=(0.6, 0.2, 0.2)):
     total_size = len(dataset)

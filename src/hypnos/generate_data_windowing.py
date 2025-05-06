@@ -13,7 +13,7 @@ def generate_data_windowing(source, win_length=4, stride=0.5):
     Fix win_length and stride (testing first).
     """
 
-    sns, lbs = load_data(source)
+    sns, lbs = load_data(source['signal'], source['label'], SEP='\t')
 
     if sns is None or lbs is None:
         return None, None
