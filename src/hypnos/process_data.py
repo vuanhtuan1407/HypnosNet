@@ -2,6 +2,7 @@ import joblib
 import yaml
 
 from src.hypnos.data_utils import load_data
+from src.hypnos.utils import data_args
 
 
 def process_data(data_conf):
@@ -25,5 +26,6 @@ def process_data(data_conf):
 
 
 if __name__ == '__main__':
-    data_conf = yaml.load(open('./config/data_conf.yml.example', "r"), Loader=yaml.FullLoader)
+    args = data_args()
+    data_conf = yaml.load(open(args.data_conf, "r"), Loader=yaml.FullLoader)
     process_data(data_conf)
