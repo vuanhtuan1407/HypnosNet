@@ -65,7 +65,7 @@ def fit(fabric, model, train_loader, val_loader, optimizer, logger, config):
             logger.info(f"Val AUROC: {val_auroc:.4f} - Val AP: {val_ap:.4f} - Val F1X: {val_f1x:.4f}")
             wandb.log({'val/auroc': val_auroc, 'val/ap': val_ap, 'val/f1x': val_f1x}, step=epoch)
 
-            if val_f1x < best_metric:
+            if val_f1x > best_metric:
                 logger.info(f'Epoch {epoch + 1}/{config["epochs"]} - New best model!')
                 best_metric = val_f1x
                 fabric.save(

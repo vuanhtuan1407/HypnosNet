@@ -15,7 +15,7 @@ def get_loader(dataset, config):
     indices_paths = [os.path.join(config["processed_data_dir"], f) for f in indices_files]
 
     if not all(os.path.exists(path) for path in indices_paths):
-        train_set, val_set, test_set, train_indices, val_indices, test_indices = split_train_val_test_random(dataset)
+        train_set, val_set, test_set, train_indices, val_indices, test_indices = split_train_val_test_random(dataset, ratio=(0.8, 0.1, 0.1))
 
         for indices, path in zip([train_indices, val_indices, test_indices], indices_paths):
             joblib.dump(indices, path)

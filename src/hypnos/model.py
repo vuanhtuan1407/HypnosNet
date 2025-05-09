@@ -28,9 +28,10 @@ class HypnosNet(nn.Module):
         x = x[:, :, 0]  # only use the eeg value
         x = self.encoder(x)
         cls_logits = self.classifier(x)
-        # cls_align = self.lb_aligner(cls_logits)
+        cls_align = self.lb_aligner(cls_logits)
         lbs_align = self.lb_aligner(lbs_vec)
-        return cls_logits, lbs_align
+        # return cls_logits, lbs_align
+        return cls_align, lbs_align
 
     def predict_raw(self, x):
         x = x[:, :, 0]
