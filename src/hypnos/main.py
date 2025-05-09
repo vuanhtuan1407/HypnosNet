@@ -30,5 +30,9 @@ if __name__ == '__main__':
     fabric.seed_everything(config['train']["seed"])
     fabric.launch()
     model = HypnosNet()
-    eeg_dts = get_dataset([f"{config['data']['processed_data_dir']}/{i}.pkl" for i in config['data']['keymap']], config)
-    train_hypnos(fabric, model, eeg_dts, logger, config)
+    try:
+        eeg_dts = get_dataset([f"{config['data']['processed_data_dir']}/data_{i}.pkl" for i in range(config['data']['num_files'])])
+        train_hypnos(fabric, model, eeg_dts, logger, config)
+    except Exception as e:
+        logger.error('Pickle file not found. Error: ', e)
+

@@ -50,12 +50,8 @@ def load_data(signal_file: str, label_file: str, SEP: str = '\t'):
     return np.array(sns).astype(np.float32), np.array(lbs).astype(np.int32)
 
 
-def dump_data(sns, lbs, target):
-    joblib.dump((sns, lbs), target)
-
-
-def chunk_signal(source, chunk_size=50):
-    sns, lbs = load_data(source)
+def chunk_signal(signal_file, label_file, chunk_size=50):
+    sns, lbs = load_data(signal_file, label_file)
 
     if sns is None or lbs is None:
         return None, None
@@ -112,9 +108,10 @@ def split_train_val_test(dataset, ratio=(0.6, 0.2, 0.2)):
     return Subset(dataset, train_ids), Subset(dataset, val_ids), Subset(dataset, test_ids), train_ids, val_ids, test_ids
 
 
-def split_train_val_test_random(dataset, ratio=(0.6, 0.2, 0.2)):
+def split_train_val_test_random(dataset, ratio=(0.6, 0.2, 0.2), seed=42):
     total_size = len(dataset)
     indices = list(range(total_size))
+    np.random.seed(seed)
     np.random.shuffle(indices)
     train_end = int(ratio[0] * total_size)
     val_end = int((ratio[0] + ratio[1]) * total_size)
@@ -122,6 +119,16 @@ def split_train_val_test_random(dataset, ratio=(0.6, 0.2, 0.2)):
     val_ids = indices[train_end:val_end]
     test_ids = indices[val_end:]
     return Subset(dataset, train_ids), Subset(dataset, val_ids), Subset(dataset, test_ids), train_ids, val_ids, test_ids
+
+
+def create_index_mapping(concat_dataset):
+    idx_map = {}
+    global_idx = 0
+    for dt_idx, dt in enumerate(concat_dataset):
+        for local_idx in range(len(dt)):
+            idx_map[global_idx] = (dt_idx, local_idx)
+            global_idx += 1
+    return idx_map
 
 
 if __name__ == "__main__":

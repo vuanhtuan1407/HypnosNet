@@ -15,7 +15,25 @@ class HypnosNet(nn.Module):
             nn.ReLU()
         )
 
-    def forward(self, x):
+        self.lb_aligner = nn.Sequential(
+            nn.Linear(3, 256),
+            nn.ReLU(),
+            nn.Dropout(p=dropout),
+            nn.Linear(256, 3),
+            nn.ReLU(),
+            nn.Softmax(dim=1)
+        )
+
+    def forward(self, x, lbs_vec):
+        x = x[:, :, 0]  # only use the eeg value
+        x = self.encoder(x)
+        cls_logits = self.classifier(x)
+        # cls_align = self.lb_aligner(cls_logits)
+        lbs_align = self.lb_aligner(lbs_vec)
+        return cls_logits, lbs_align
+
+    def predict_raw(self, x):
+        x = x[:, :, 0]
         x = self.encoder(x)
         cls_logits = self.classifier(x)
         return x, cls_logits

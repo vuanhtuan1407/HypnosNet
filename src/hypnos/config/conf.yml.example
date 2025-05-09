@@ -1,6 +1,6 @@
 data:
   processed_data_dir: '../../data/processed'
-  keymap: [ 'K3_EEG3_11h' ]
+  num_files: 3
 
 train:
   seed: 42

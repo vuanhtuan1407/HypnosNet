@@ -1,10 +1,11 @@
 import math
 
+import joblib
 import numpy as np
 import yaml
 from tqdm import tqdm
 
-from src.hypnos.data_utils import load_data, dump_data, generate_lbs
+from src.hypnos.data_utils import load_data, generate_lbs
 from src.hypnos.utils import data_args
 
 
@@ -69,7 +70,7 @@ if __name__ == '__main__':
         print(sns.shape, lbs[0])
         if sns is not None and lbs is not None:
             print(f"Dumping target at {source_id}.pkl and {source_id}_pre.pkl.")
-            dump_data(sns, lbs, target=f'{processed_data_dir}/{source_id}.pkl')
-            dump_data(sns, lbs_pre, target=f'{processed_data_dir}/{source_id}_pre.pkl')
+            joblib.dump((sns, lbs), f'{processed_data_dir}/{source_id}.pkl')
+            joblib.dump((sns, lbs_pre), f'{processed_data_dir}/{source_id}_pre.pkl')
         else:
             print(f'Chunking interrupt. {source} has no data!')
