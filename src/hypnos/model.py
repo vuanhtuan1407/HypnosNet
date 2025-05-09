@@ -16,10 +16,10 @@ class HypnosNet(nn.Module):
         )
 
         self.lb_aligner = nn.Sequential(
-            nn.Linear(3, 256),
+            nn.Linear(3, 16),
             nn.ReLU(),
             nn.Dropout(p=dropout),
-            nn.Linear(256, 3),
+            nn.Linear(16, 3),
             nn.ReLU(),
             nn.Softmax(dim=1)
         )
