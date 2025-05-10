@@ -1,6 +1,6 @@
 import yaml
 
-from src.hypnos.utils import log
+from src.hypnos.utils import log, parse_data_args
 from tests.generate_data_windowing import generate_data_windowing_v2
 from tests.segment_data import segment_data
 
@@ -44,3 +44,9 @@ def prepare_data(data_conf, logger=None):
 
     yaml.dump(metainfo, open(f"{processed_data_dir}/metainfo.yaml", "w"))
     log('Created metainfo.yaml successfully', logger)
+
+
+if __name__ == '__main__':
+    data_args = parse_data_args()
+    config = yaml.load(open(data_args.data_config, "r"), Loader=yaml.FullLoader)
+    prepare_data(config)
