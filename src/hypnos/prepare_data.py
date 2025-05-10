@@ -26,7 +26,7 @@ def prepare_data(data_conf, logger=None):
 
     for i, (sns_f, lbs_f) in enumerate(zip(data_conf['sns_files'], data_conf['lbs_files'])):
         if i < len(data_conf['sns_files']) - 2:
-            print("Prepare data for training")
+            log("Prepare data for training", logger)
             # prepare for training baseline and testing
             segment_data(f"{raw_data_dir}/{sns_f}", f"{raw_data_dir}/{lbs_f}",
                          f"{processed_data_dir}/train_data_{i}.pkl", logger=logger)
@@ -37,7 +37,7 @@ def prepare_data(data_conf, logger=None):
                                        f'{processed_data_dir}/train_data_{i}_windowing.pkl', logger=logger)
             metainfo["train_files"].append(f"{processed_data_dir}/train_data_{i}_windowing.pkl")
         else:
-            print("Prepare data for testing")
+            log("Prepare data for testing", logger)
             segment_data(f"{raw_data_dir}/{sns_f}", f"{raw_data_dir}/{lbs_f}",
                          f"{processed_data_dir}/test_data_{i}.pkl", logger=logger)
             metainfo["test_files"].append(f"{processed_data_dir}/test_data_{i}.pkl")
