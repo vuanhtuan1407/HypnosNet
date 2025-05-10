@@ -6,7 +6,7 @@ from tests.generate_data_windowing import generate_data_windowing_v2
 from tests.segment_data import segment_data
 
 
-def prepare_data(data_conf, logger=None):
+def prepare_data(data_conf, postfix='all', logger=None):
     """
     Prepares and processes data based on the provided configuration.
 
@@ -15,8 +15,14 @@ def prepare_data(data_conf, logger=None):
 
     Notes:
         1. Use the last 2 files for testing.
+        2. postfix = 'segment', 'windowing', 'all'
     """
 
+    # Now use postfix == 'all' only
+    __prepare_data_all(data_conf, logger)
+
+
+def __prepare_data_segment(data_conf, logger=None):
     raw_data_dir = data_conf['raw_data_dir']
     processed_data_dir = data_conf['processed_data_dir']
 
@@ -28,22 +34,76 @@ def prepare_data(data_conf, logger=None):
     for i, (sns_f, lbs_f) in enumerate(zip(data_conf['sns_files'], data_conf['lbs_files'])):
         if i < len(data_conf['sns_files']) - 2:
             log("Prepare data for training", logger)
-            # prepare for training baseline and testing
             segment_data(f"{raw_data_dir}/{sns_f}", f"{raw_data_dir}/{lbs_f}",
                          f"{processed_data_dir}/train_data_{i}.pkl", logger=logger)
-            metainfo["train_files"].append(f"{processed_data_dir}/train_data_{i}.pkl")
+            metainfo["train_files"].append(f"{processed_data_dir}/train_data_{i}_segment.pkl")
 
-            # prepare for training hypnos
-            generate_data_windowing_v2(f'{raw_data_dir}/{sns_f}', f'{raw_data_dir}/{lbs_f}',
-                                       f'{processed_data_dir}/train_data_{i}_windowing.pkl', logger=logger)
-            metainfo["train_files"].append(f"{processed_data_dir}/train_data_{i}_windowing.pkl")
         else:
             log("Prepare data for testing", logger)
             segment_data(f"{raw_data_dir}/{sns_f}", f"{raw_data_dir}/{lbs_f}",
                          f"{processed_data_dir}/test_data_{i}.pkl", logger=logger)
             metainfo["test_files"].append(f"{processed_data_dir}/test_data_{i}.pkl")
 
-    yaml.dump(metainfo, open(f"{processed_data_dir}/metainfo.yaml", "w"))
+    yaml.dump(metainfo, open(f"{processed_data_dir}/metainfo_segment", "w"))
+    log('Created metainfo_segment.yaml successfully', logger)
+
+
+def __prepare_data_windowing(data_conf, logger=None):
+    raw_data_dir = data_conf['raw_data_dir']
+    processed_data_dir = data_conf['processed_data_dir']
+
+    metainfo = {
+        "train_files": [],
+        "test_files": []
+    }
+
+    for i, (sns_f, lbs_f) in enumerate(zip(data_conf['sns_files'], data_conf['lbs_files'])):
+        if i < len(data_conf['sns_files']) - 2:
+            log("Prepare data for training", logger)
+            generate_data_windowing_v2(f"{raw_data_dir}/{sns_f}", f"{raw_data_dir}/{lbs_f}",
+                                       f"{processed_data_dir}/train_data_{i}.pkl", logger=logger)
+            metainfo["train_files"].append(f"{processed_data_dir}/train_data_{i}_windowing.pkl")
+
+        else:
+            log("Prepare data for testing", logger)
+            segment_data(f"{raw_data_dir}/{sns_f}", f"{raw_data_dir}/{lbs_f}",
+                         f"{processed_data_dir}/test_data_{i}.pkl", logger=logger)
+            metainfo["test_files"].append(f"{processed_data_dir}/test_data_{i}.pkl")
+
+    yaml.dump(metainfo, open(f"{processed_data_dir}/metainfo_windowing", "w"))
+    log('Created metainfo_windowing.yaml successfully', logger)
+
+
+def __prepare_data_all(data_conf, logger=None):
+    raw_data_dir = data_conf['raw_data_dir']
+    processed_data_dir = data_conf['processed_data_dir']
+
+    metainfo = {
+        "train_files": {
+            "segment": [],
+            "windowing": []
+        },
+        "test_files": []
+    }
+
+    for i, (sns_f, lbs_f) in enumerate(zip(data_conf['sns_files'], data_conf['lbs_files'])):
+        if i < len(data_conf['sns_files']) - 2:
+            log("Prepare data for training", logger)
+            segment_data(f"{raw_data_dir}/{sns_f}", f"{raw_data_dir}/{lbs_f}",
+                         f"{processed_data_dir}/train_data_{i}.pkl", logger=logger)
+            metainfo["train_files"]['segment'].append(f"{processed_data_dir}/train_data_{i}_segment.pkl")
+
+            generate_data_windowing_v2(f"{raw_data_dir}/{sns_f}", f"{raw_data_dir}/{lbs_f}",
+                                       f"{processed_data_dir}/train_data_{i}.pkl", logger=logger)
+            metainfo["train_files"]['windowing'].append(f"{processed_data_dir}/train_data_{i}_windowing.pkl")
+
+        else:
+            log("Prepare data for testing", logger)
+            segment_data(f"{raw_data_dir}/{sns_f}", f"{raw_data_dir}/{lbs_f}",
+                         f"{processed_data_dir}/test_data_{i}.pkl", logger=logger)
+            metainfo["test_files"].append(f"{processed_data_dir}/test_data_{i}.pkl")
+
+    yaml.dump(metainfo, open(f"{processed_data_dir}/metainfo_segment", "w"))
     log('Created metainfo.yaml successfully', logger)
 
 

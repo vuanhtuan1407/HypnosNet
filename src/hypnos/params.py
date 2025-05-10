@@ -49,3 +49,8 @@ LB_MAT = [
     [0.2, 0.6, 0.2],
     [0.2, 0.2, 0.6],
 ]
+
+MODEL_DATASET_MAP = {
+    'hypnos': 'windowing',
+    'mc_stft_cnn': 'segment'
+}

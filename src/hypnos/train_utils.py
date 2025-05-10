@@ -1,9 +1,12 @@
 import numpy as np
 import torch
-from sklearn.metrics import roc_auc_score as auroc
 from sklearn.metrics import average_precision_score as auprc
+from sklearn.metrics import roc_auc_score as auroc
+from torch.utils.data import DataLoader
 
+from src.hypnos.model import HypnosNet
 from src.hypnos.params import LB_VEC, LB_MAT
+from src.hypnos.utils import log
 
 
 def cal_masked_ce_loss():
@@ -43,3 +46,34 @@ def cal_eval_metrics(logits, lbs):
     ap_score = auprc(lbs, lbs_hat)
     f1x = 2 * auroc_score * ap_score / (auroc_score + ap_score + 1e-9)
     return auroc_score, ap_score, f1x
+
+
+def get_model(model_name, logger=None):
+    if model_name == 'hypnos':
+        return HypnosNet()
+    else:
+        log("Model not supported! Use default model.", logger, 'error')
+        return HypnosNet()
+
+
+def get_loader(train_set, val_set, test_set, config):
+    train_loader = DataLoader(
+        dataset=train_set,
+        batch_size=config['batch_size'],
+        shuffle=True,
+        drop_last=True
+    )
+    val_loader = DataLoader(
+        dataset=val_set,
+        batch_size=config['batch_size'],
+        shuffle=False,
+        drop_last=True
+    )
+    test_loader = DataLoader(
+        dataset=test_set,
+        batch_size=config['batch_size'],
+        shuffle=False,
+        drop_last=True
+    )
+
+    return train_loader, val_loader, test_loader

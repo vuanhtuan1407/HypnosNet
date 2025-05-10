@@ -1,18 +1,13 @@
-import os
-from pathlib import Path
-
 import numpy as np
 import pandas as pd
 import torch
-import wandb
 from tqdm import tqdm
 
-from src.hypnos.data_loader import get_loader
-from src.hypnos.train_utils import cal_kl_mse_cos_entropy_alignment_loss, cal_eval_metrics
+from src.hypnos.train_utils import cal_kl_mse_cos_entropy_alignment_loss, cal_eval_metrics, get_loader, get_model
 from src.hypnos.utils import log
 
 
-def fit(fabric, model, train_loader, val_loader, optimizer, config, logger=None):
+def fit_hypnos(fabric, model, train_loader, val_loader, optimizer, config, logger=None, wandb=None):
     model.train()
     for epoch in range(config['epochs']):
         total_loss = total_samples = 0
@@ -116,23 +111,17 @@ def test(fabric, model, test_loader, config, logger=None):
         np.savetxt(f'{config["out_dir"]}/truths_soft_lbs.txt', truths.detach().cpu().numpy(), fmt='%.4f')
 
 
-def train_hypnos(fabric, model, train_dataset, test_dataset, config, logger=None):
+def train_model(fabric, model_name, train_dataset, val_dataset, test_dataset, config, logger=None, wandb=None):
     train_config = config['train']
-    wandb.login(key=os.environ["WANDB_API_KEY"])
-    wandb.init(
-        mode='online',
-        project="HypnosNet",
-        dir=Path(config['logs']['log_dir']).parent.absolute(),
-        config=config['train'],
-    )
+    model = get_model(model_name, logger)
     optimizer = torch.optim.Adam(model.parameters(), lr=train_config["lr"])
-    train_loader, val_loader, test_loader = get_loader(train_dataset, test_dataset, train_config)
+    train_loader, val_loader, test_loader = get_loader(train_dataset, val_dataset, test_dataset, train_config)
 
     # setup to fabric
     model, optimizer = fabric.setup(model, optimizer)
     train_loader, val_loader, test_loader = fabric.setup_dataloaders(train_loader, val_loader, test_loader)
 
-    fit(fabric, model, train_loader, val_loader, optimizer, train_config, logger)
+    # training & testing
+    if train_config['model_name'] == 'hypnos':
+        fit_hypnos(fabric, model, train_loader, val_loader, optimizer, train_config, logger)
     test(fabric, model, test_loader, train_config, logger)
-
-    wandb.finish()

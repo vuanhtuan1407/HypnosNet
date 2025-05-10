@@ -1,17 +1,19 @@
 import os
-
-from dotenv import load_dotenv
+from pathlib import Path
 
 import torch
+import wandb
 import yaml
+from dotenv import load_dotenv
 from lightning.fabric import Fabric
 
+from src.hypnos.data_utils import split_train_val_random
 from src.hypnos.dataset import get_dataset
 from src.hypnos.logger import get_logger
-from src.hypnos.model import HypnosNet
+from src.hypnos.params import MODEL_DATASET_MAP
 from src.hypnos.prepare_data import prepare_data
-from src.hypnos.training import train_hypnos
-from src.hypnos.utils import parse_args, parse_data_args
+from src.hypnos.training import train_model
+from src.hypnos.utils import parse_args
 
 if __name__ == '__main__':
     torch.set_float32_matmul_precision('high')
@@ -25,21 +27,37 @@ if __name__ == '__main__':
     except Exception as e:
         logger.error("File .env may not exist. Continue without loading. Error: ", e)
 
+    # define wandb
+    wandb.login(key=os.environ["WANDB_API_KEY"])
+    wandb.init(
+        mode='online',
+        project="HypnosNet",
+        dir=Path(config['logs']['log_dir']).parent.absolute(),
+        config=config['train'],
+    )
+
+    # define fabrics
+    fabric = Fabric(
+        accelerator=config['train']["accelerator"],
+        devices=config['train']["devices"],
+        precision='32-true',
+    )
+    fabric.seed_everything(config['train']["seed"])
+    fabric.launch()
+
+    model_name = config['train']['model_name']
+
     # get data
     if not os.path.exists(f"{config['data']['processed_data_dir']}/metainfo.yaml"):
-        prepare_data(config['data'], logger)
+        prepare_data(config['data'], postfix='all', logger=logger)
     metainfo = yaml.load(open(f"{config['data']['processed_data_dir']}/metainfo.yaml", "r"), Loader=yaml.FullLoader)
-    train_dataset = get_dataset(metainfo['train_files'])
+
+    train_dataset = get_dataset(metainfo['train_files'][MODEL_DATASET_MAP[model_name]])
+    train_set, val_set, _, _ = split_train_val_random(train_dataset)
     test_dataset = get_dataset(metainfo['test_files'])
 
     # training
     os.makedirs(config['train']['out_dir'], exist_ok=True)  # create out dir
-    fabric = Fabric(
-        accelerator=config['train']["accelerator"],
-        devices=config['train']["devices"],
-        precision='32-true'
-    )
-    fabric.seed_everything(config['train']["seed"])
-    fabric.launch()
-    model = HypnosNet()
-    train_hypnos(fabric, model, train_dataset, test_dataset, config, logger)
+    train_model(fabric, model_name, train_set, val_set, test_dataset, config, logger)
+
+    wandb.finish()
