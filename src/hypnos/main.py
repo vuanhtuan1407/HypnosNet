@@ -9,19 +9,43 @@ from lightning.fabric import Fabric
 from src.hypnos.dataset import get_dataset
 from src.hypnos.logger import get_logger
 from src.hypnos.model import HypnosNet
+from src.hypnos.prepare_data import prepare_data
 from src.hypnos.training import train_hypnos
-from src.hypnos.utils import training_args
+from src.hypnos.utils import parse_args, parse_data_args
 
 if __name__ == '__main__':
     torch.set_float32_matmul_precision('high')
-    args = training_args()
+
+    # get data
+    data_args = parse_data_args()
+    data_conf = yaml.load(open(data_args.data_config, "r"), Loader=yaml.FullLoader)
+    if not os.path.exists(f"{data_conf['processed_data_dir']}/metainfo.yaml"):
+        prepare_data(data_conf)
+
+    metainfo = yaml.load(open(f"{data_conf['processed_data_dir']}/metainfo.yaml", "r"), Loader=yaml.FullLoader)
+    train_dataset = get_dataset(metainfo['train_files'])
+    test_dataset = get_dataset(metainfo['test_files'])
+
+    # training
+    args = parse_args()
     config = yaml.load(open(args.config, "r"), Loader=yaml.FullLoader)
     logger = get_logger(config['logs']['log_dir'], config['logs']['log_level'])
+
+    # load .env
     try:
-        load_dotenv(config['env_path'])
+        load_dotenv(config['train']['env_path'])
     except Exception as e:
         logger.error("File .env may not exist. Continue without loading. Error: ", e)
-    os.makedirs(config['out_dir'], exist_ok=True)  # create out dir
+
+    # get data
+    if not os.path.exists(f"{config['data']['processed_data_dir']}/metainfo.yaml"):
+        prepare_data(config['data'], logger)
+    metainfo = yaml.load(open(f"{config['data']['processed_data_dir']}/metainfo.yaml", "r"), Loader=yaml.FullLoader)
+    train_dataset = get_dataset(metainfo['train_files'])
+    test_dataset = get_dataset(metainfo['test_files'])
+
+    # training
+    os.makedirs(config['train']['out_dir'], exist_ok=True)  # create out dir
     fabric = Fabric(
         accelerator=config['train']["accelerator"],
         devices=config['train']["devices"],
@@ -30,9 +54,4 @@ if __name__ == '__main__':
     fabric.seed_everything(config['train']["seed"])
     fabric.launch()
     model = HypnosNet()
-    try:
-        eeg_dts = get_dataset([f"{config['data']['processed_data_dir']}/data_{i}.pkl" for i in range(config['data']['num_files'])])
-        train_hypnos(fabric, model, eeg_dts, logger, config)
-    except Exception as e:
-        logger.error('Pickle file not found. Error: ', e)
-
+    train_hypnos(fabric, model, train_dataset, test_dataset, config, logger)

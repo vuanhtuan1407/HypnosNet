@@ -9,9 +9,10 @@ from tqdm import tqdm
 
 from src.hypnos.data_loader import get_loader
 from src.hypnos.train_utils import cal_kl_mse_cos_entropy_alignment_loss, cal_eval_metrics
+from src.hypnos.utils import log
 
 
-def fit(fabric, model, train_loader, val_loader, optimizer, logger, config):
+def fit(fabric, model, train_loader, val_loader, optimizer, config, logger=None):
     model.train()
     for epoch in range(config['epochs']):
         total_loss = total_samples = 0
@@ -39,12 +40,12 @@ def fit(fabric, model, train_loader, val_loader, optimizer, logger, config):
             total_loss += loss.item()
             total_samples += lbs.shape[0]
             train_tqdm.set_postfix(loss=f'{total_loss / total_samples:.4f}')
-        logger.info(f'Epoch {epoch + 1}/{config["epochs"]} - Train Loss: {total_loss / total_samples:.4f}')
+        log(f'Epoch {epoch + 1}/{config["epochs"]} - Train Loss: {total_loss / total_samples:.4f}', logger)
         wandb.log({'train/loss': total_loss / total_samples}, step=epoch)
 
         model.eval()
         # val_loss = val_samples = 0
-        best_metric = 1e6
+        best_metric = 1e-6
         preds, truths = [], []
         with torch.no_grad():
             val_tqdm = tqdm(
@@ -62,11 +63,11 @@ def fit(fabric, model, train_loader, val_loader, optimizer, logger, config):
             preds = torch.cat(preds, dim=0)
             truths = torch.cat(truths, dim=0)
             val_auroc, val_ap, val_f1x = cal_eval_metrics(preds, truths)
-            logger.info(f"Val AUROC: {val_auroc:.4f} - Val AP: {val_ap:.4f} - Val F1X: {val_f1x:.4f}")
+            log(f"Val AUROC: {val_auroc:.4f} - Val AP: {val_ap:.4f} - Val F1X: {val_f1x:.4f}", logger)
             wandb.log({'val/auroc': val_auroc, 'val/ap': val_ap, 'val/f1x': val_f1x}, step=epoch)
 
             if val_f1x > best_metric:
-                logger.info(f'Epoch {epoch + 1}/{config["epochs"]} - New best model!')
+                log(f'Epoch {epoch + 1}/{config["epochs"]} - New best model!', logger)
                 best_metric = val_f1x
                 fabric.save(
                     f'{config["out_dir"]}/best_model.ckpt',
@@ -80,7 +81,7 @@ def fit(fabric, model, train_loader, val_loader, optimizer, logger, config):
                 )
 
 
-def test(fabric, model, test_loader, logger, config):
+def test(fabric, model, test_loader, config, logger=None):
     checkpoint = fabric.load(f'{config["out_dir"]}/best_model.ckpt')
     model.load_state_dict(checkpoint['model_state_dict'])
     model.eval()
@@ -103,7 +104,7 @@ def test(fabric, model, test_loader, logger, config):
         preds = torch.cat(preds, dim=0)
         truths = torch.cat(truths, dim=0)
         test_auroc, test_ap, test_f1x = cal_eval_metrics(preds, truths)
-        logger.info(f"Test AUROC: {test_auroc:.4f} - Test AP: {test_ap:.4f} - Test F1X: {test_f1x:.4f}")
+        log(f"Test AUROC: {test_auroc:.4f} - Test AP: {test_ap:.4f} - Test F1X: {test_f1x:.4f}", logger)
         np.save(f'{config["out_dir"]}/latent_encode.npy', zs.detach().cpu().numpy())
         df = pd.DataFrame({
             "AUROC": [test_auroc],
@@ -115,12 +116,8 @@ def test(fabric, model, test_loader, logger, config):
         np.savetxt(f'{config["out_dir"]}/truths_soft_lbs.txt', truths.detach().cpu().numpy(), fmt='%.4f')
 
 
-def train_hypnos(fabric, model, dataset, logger, config):
-    train_config = {
-        **config['train'],
-        "out_dir": config['out_dir'],
-        "processed_data_dir": config['data']['processed_data_dir']
-    }
+def train_hypnos(fabric, model, train_dataset, test_dataset, config, logger=None):
+    train_config = config['train']
     wandb.login(key=os.environ["WANDB_API_KEY"])
     wandb.init(
         mode='online',
@@ -129,7 +126,7 @@ def train_hypnos(fabric, model, dataset, logger, config):
         config=config['train'],
     )
     optimizer = torch.optim.Adam(model.parameters(), lr=train_config["lr"])
-    train_loader, val_loader, test_loader = get_loader(dataset, train_config)
+    train_loader, val_loader, test_loader = get_loader(train_dataset, test_dataset, train_config)
 
     # setup to fabric
     model, optimizer = fabric.setup(model, optimizer)

@@ -1,6 +1,25 @@
 data:
-  processed_data_dir: '../../data/processed'
-  num_files: 3
+  data_dir: ../../data/
+  raw_data_dir: ../../data/raw
+  processed_data_dir: ../../data/processed
+  sns_files:
+    - K1_EEG1_SAL.csv
+    - K1_EEG7_SAL.csv
+    - K2_EEG4_SAL.csv
+    - K2_EEG5_SAL.csv
+    - K4_EEG7_SAL.csv
+    - raw_K3_EEG3_11h.txt
+    - raw_RS2_EEG1_23 hr.txt
+    - raw_S1_EEG1_23 hr.txt
+  lbs_files:
+    - K1_EEG1_11h.txt
+    - K1_EEG7_11h.txt
+    - K2_EEG4_11h.txt
+    - K2_EEG5_11h.txt
+    - K4_EEG7_11h.txt
+    - K3_EEG3_11h.txt
+    - RS2_EEG1_23 hr.txt
+    - S1_EEG1_23 hr.txt
 
 train:
   seed: 42
@@ -12,10 +31,9 @@ train:
   devices: 'auto'
   disable_tqdm: False
 
+  out_dir: '../../out'
+  env_path: './config/.env'
+
 logs:
   log_dir: '../../logs'
   log_level: 'DEBUG'
-
-out_dir: '../../out'
-
-env_path: './config/.env'

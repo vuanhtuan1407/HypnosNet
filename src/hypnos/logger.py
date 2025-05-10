@@ -3,8 +3,8 @@ import os
 from datetime import datetime
 
 
-def get_logger(log_dir="logs", log_level=logging.INFO):
-    logger = logging.getLogger('HypnosNetLogger')
+def get_logger(name='HypnosNetLogger', log_dir="logs", log_level=logging.INFO):
+    logger = logging.getLogger(name)
     logger.setLevel(log_level)
 
     if logger.hasHandlers():
