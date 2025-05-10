@@ -132,7 +132,7 @@ def train_hypnos(fabric, model, train_dataset, test_dataset, config, logger=None
     model, optimizer = fabric.setup(model, optimizer)
     train_loader, val_loader, test_loader = fabric.setup_dataloaders(train_loader, val_loader, test_loader)
 
-    fit(fabric, model, train_loader, val_loader, optimizer, logger, train_config)
-    test(fabric, model, test_loader, logger, train_config)
+    fit(fabric, model, train_loader, val_loader, optimizer, train_config, logger)
+    test(fabric, model, test_loader, train_config, logger)
 
     wandb.finish()
