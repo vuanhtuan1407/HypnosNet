@@ -15,18 +15,6 @@ from src.hypnos.utils import parse_args, parse_data_args
 
 if __name__ == '__main__':
     torch.set_float32_matmul_precision('high')
-
-    # get data
-    data_args = parse_data_args()
-    data_conf = yaml.load(open(data_args.data_config, "r"), Loader=yaml.FullLoader)
-    if not os.path.exists(f"{data_conf['processed_data_dir']}/metainfo.yaml"):
-        prepare_data(data_conf)
-
-    metainfo = yaml.load(open(f"{data_conf['processed_data_dir']}/metainfo.yaml", "r"), Loader=yaml.FullLoader)
-    train_dataset = get_dataset(metainfo['train_files'])
-    test_dataset = get_dataset(metainfo['test_files'])
-
-    # training
     args = parse_args()
     config = yaml.load(open(args.config, "r"), Loader=yaml.FullLoader)
     logger = get_logger(config['logs']['log_dir'], config['logs']['log_level'])

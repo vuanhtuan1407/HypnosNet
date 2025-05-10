@@ -1,5 +1,6 @@
 import yaml
 
+from src.hypnos.logger import get_logger
 from src.hypnos.utils import log, parse_data_args
 from tests.generate_data_windowing import generate_data_windowing_v2
 from tests.segment_data import segment_data
@@ -48,5 +49,6 @@ def prepare_data(data_conf, logger=None):
 
 if __name__ == '__main__':
     data_args = parse_data_args()
+    logger = get_logger("DataLogger")
     config = yaml.load(open(data_args.data_config, "r"), Loader=yaml.FullLoader)
     prepare_data(config)

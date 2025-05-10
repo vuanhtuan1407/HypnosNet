@@ -74,7 +74,7 @@ def chunk_signal(signal_file, label_file, chunk_size=50):
 
 
 def segment_data(signal_file, label_file, target_file, logger=None):
-    sns, lbs = load_data(signal_file, label_file)
+    sns, lbs = load_data(signal_file, label_file, logger)
 
     if sns is None or lbs is None:
         return
@@ -155,7 +155,7 @@ def generate_data_windowing(signal_file, label_file, target_file, logger=None):
 
 
 def generate_data_windowing_v2(signal_file, label_file, target_file, logger=None):
-    sns, lbs = load_data(signal_file, label_file)
+    sns, lbs = load_data(signal_file, label_file, logger)
 
     if sns is None or lbs is None:
         return
