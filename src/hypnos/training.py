@@ -52,13 +52,15 @@ def fit_hypnos(fabric, model, train_loader, val_loader, optimizer, config, wandb
             for batch_idx, batch in val_tqdm:
                 sns, _, lbs_onehot, _ = batch
                 _, logits = model.predict_hard(sns)
-                print(logits.shape, lbs_onehot.shape)
-                preds.append(logits[:, -1])
-                truths.append(lbs_onehot[:, -1])
+                preds.append(logits)
+                truths.append(lbs_onehot)
 
-            preds = torch.cat(preds, dim=0)
+            preds = torch.softmax(torch.cat(preds, dim=0), dim=-1)
             truths = torch.cat(truths, dim=0)
-            print(preds.shape, truths.shape)
+
+            valid_mask = truths[:, :-1].sum(dim=-1) > 0
+            preds = preds[valid_mask]
+            truths = truths[valid_mask]
             val_auroc, val_ap, val_f1x = cal_eval_metrics(preds, truths)
             log(f"Val AUROC: {val_auroc:.4f} - Val AP: {val_ap:.4f} - Val F1X: {val_f1x:.4f}", logger)
             wandb.log({'val/auroc': val_auroc, 'val/ap': val_ap, 'val/f1x': val_f1x}, step=epoch)
