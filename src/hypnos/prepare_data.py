@@ -100,12 +100,12 @@ def __prepare_data_all(data_conf, logger=None):
     log("Prepare data for training", logger)
     for file_id in train_file_ids:
         i, sns_f, lbs_f = file_id, data_conf['sns_files'][file_id], data_conf['lbs_files'][file_id]
-        segment_data(f"{raw_data_dir}/{sns_f}", f"{raw_data_dir}/{lbs_f}", f"{processed_data_dir}/train_data_{i}.pkl",
+        segment_data(f"{raw_data_dir}/{sns_f}", f"{raw_data_dir}/{lbs_f}", f"{processed_data_dir}/train_data_{i}_segment.pkl",
                      logger=logger)
         metainfo["train_files"]['segment'].append(f"{processed_data_dir}/train_data_{i}_segment.pkl")
 
         generate_data_windowing_v2(f"{raw_data_dir}/{sns_f}", f"{raw_data_dir}/{lbs_f}",
-                                   f"{processed_data_dir}/train_data_{i}.pkl", logger=logger)
+                                   f"{processed_data_dir}/train_data_{i}_windowing.pkl", logger=logger)
         metainfo["train_files"]['windowing'].append(f"{processed_data_dir}/train_data_{i}_windowing.pkl")
 
     log("Prepare data for validation", logger)
