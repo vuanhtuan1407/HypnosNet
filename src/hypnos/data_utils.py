@@ -73,8 +73,8 @@ def chunk_signal(signal_file, label_file, chunk_size=50):
     return sns[:end_idx].astype(np.float32), lbs[:end_idx].astype(np.int32)
 
 
-def segment_data(signal_file, label_file, target_file, logger=None):
-    sns, lbs = load_data(signal_file, label_file, logger)
+def segment_data(signal_file, label_file, target_file, SEP='\t', logger=None):
+    sns, lbs = load_data(signal_file, label_file, SEP, logger)
 
     if sns is None or lbs is None:
         return
@@ -154,8 +154,8 @@ def generate_data_windowing(signal_file, label_file, target_file, logger=None):
     joblib.dump((sns_new, lbs_new, lbs_pre), target_file)
 
 
-def generate_data_windowing_v2(signal_file, label_file, target_file, logger=None):
-    sns, lbs = load_data(signal_file, label_file, logger)
+def generate_data_windowing_v2(signal_file, label_file, target_file, SEP='\t', logger=None):
+    sns, lbs = load_data(signal_file, label_file, SEP, logger)
 
     if sns is None or lbs is None:
         return
@@ -208,7 +208,7 @@ def dt2ms(dt, offset=946659600000, ftype='signal'):
     if ftype == 'signal':
         try:
             return int(datetime.strptime(dt, '%Y.%m.%d.  %H:%M:%S.%f').timestamp()) * 1000 - offset
-        except:
+        except ValueError:
             return int(datetime.strptime(dt, '%m/%d/%Y  %H:%M:%S.%f').timestamp()) * 1000 - offset
     elif ftype == 'label':
         return int(datetime.strptime(dt, '%Y.%m.%d.  %H:%M:%S').timestamp()) * 1000 - offset

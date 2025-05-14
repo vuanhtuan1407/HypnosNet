@@ -97,29 +97,29 @@ def __prepare_data_all(data_conf, logger=None):
     val_file_ids = file_ids[-3:-2]
     test_file_ids = file_ids[-2:]
 
+    log("Prepare data for training", logger)
     for file_id in train_file_ids:
         i, sns_f, lbs_f = file_id, data_conf['sns_files'][file_id], data_conf['lbs_files'][file_id]
-        log("Prepare data for training", logger)
-        segment_data(f"{raw_data_dir}/{sns_f}", f"{raw_data_dir}/{lbs_f}",
-                     f"{processed_data_dir}/train_data_{i}.pkl", logger=logger)
+        segment_data(f"{raw_data_dir}/{sns_f}", f"{raw_data_dir}/{lbs_f}", f"{processed_data_dir}/train_data_{i}.pkl",
+                     logger=logger)
         metainfo["train_files"]['segment'].append(f"{processed_data_dir}/train_data_{i}_segment.pkl")
 
         generate_data_windowing_v2(f"{raw_data_dir}/{sns_f}", f"{raw_data_dir}/{lbs_f}",
                                    f"{processed_data_dir}/train_data_{i}.pkl", logger=logger)
         metainfo["train_files"]['windowing'].append(f"{processed_data_dir}/train_data_{i}_windowing.pkl")
 
+    log("Prepare data for validation", logger)
     for file_id in val_file_ids:
         i, sns_f, lbs_f = file_id, data_conf['sns_files'][file_id], data_conf['lbs_files'][file_id]
-        log("Prepare data for validation", logger)
-        segment_data(f"{raw_data_dir}/{sns_f}", f"{raw_data_dir}/{lbs_f}",
-                     f"{processed_data_dir}/val_data_{i}.pkl", logger=logger)
+        segment_data(f"{raw_data_dir}/{sns_f}", f"{raw_data_dir}/{lbs_f}", f"{processed_data_dir}/val_data_{i}.pkl",
+                     logger=logger)
         metainfo["val_files"].append(f"{processed_data_dir}/val_data_{i}.pkl")
 
+    log("Prepare data for testing", logger)
     for file_id in test_file_ids:
         i, sns_f, lbs_f = file_id, data_conf['sns_files'][file_id], data_conf['lbs_files'][file_id]
-        log("Prepare data for testing", logger)
-        segment_data(f"{raw_data_dir}/{sns_f}", f"{raw_data_dir}/{lbs_f}",
-                     f"{processed_data_dir}/test_data_{i}.pkl", logger=logger)
+        segment_data(f"{raw_data_dir}/{sns_f}", f"{raw_data_dir}/{lbs_f}", f"{processed_data_dir}/test_data_{i}.pkl",
+                     logger=logger)
         metainfo["test_files"].append(f"{processed_data_dir}/test_data_{i}.pkl")
 
     yaml.dump(metainfo, open(f"{processed_data_dir}/metainfo_segment", "w"))
@@ -130,4 +130,4 @@ if __name__ == '__main__':
     data_args = parse_data_args()
     logger = get_logger("DataLogger")
     config = yaml.load(open(data_args.data_config, "r"), Loader=yaml.FullLoader)
-    prepare_data(config)
+    prepare_data(config, logger)
