@@ -8,6 +8,7 @@ from src.hypnos.utils import log
 
 
 def fit_hypnos(fabric, model, train_loader, val_loader, optimizer, config, wandb, logger=None):
+    best_metric = 1e-6
     for epoch in range(config['epochs']):
         model.train()
         total_loss = total_samples = 0
@@ -22,7 +23,7 @@ def fit_hypnos(fabric, model, train_loader, val_loader, optimizer, config, wandb
             sns, lbs, lbs_onehot, lbs_vec = batch
             soft_lbs_hat, hard_lbs_hat = model(sns)
             kl_t = 1 + config['kl_e'] / (epoch + config['kl_e'])
-            loss = cal_fit_hypnos_loss(hard_lbs_hat, soft_lbs_hat, lbs_onehot, lbs_vec, kl_t, 0.5, 0.5)
+            loss = cal_fit_hypnos_loss(hard_lbs_hat, soft_lbs_hat, lbs_onehot, lbs_vec, kl_t, 1, 1)
             fabric.backward(loss)
 
             # Stuck-Survival Training (Meta AI 2022)
@@ -40,7 +41,6 @@ def fit_hypnos(fabric, model, train_loader, val_loader, optimizer, config, wandb
 
         model.eval()
         # val_loss = val_samples = 0
-        best_metric = 1e-6
         preds, truths = [], []
         with torch.no_grad():
             val_tqdm = tqdm(
@@ -102,6 +102,10 @@ def test(fabric, model, test_loader, config, logger=None):
         zs = torch.cat(zs, dim=0)
         preds = torch.cat(preds, dim=0)
         truths = torch.cat(truths, dim=0)
+
+        valid_mask = truths[:, :-1].sum(dim=-1) > 0
+        preds = preds[:, :-1][valid_mask]
+        truths = truths[:, :-1][valid_mask]
         test_auroc, test_ap, test_f1x = cal_eval_metrics(preds, truths)
         log(f"Test AUROC: {test_auroc:.4f} - Test AP: {test_ap:.4f} - Test F1X: {test_f1x:.4f}", logger)
         np.save(f'{config["out_dir"]}/latent_encode.npy', zs.detach().cpu().numpy())
