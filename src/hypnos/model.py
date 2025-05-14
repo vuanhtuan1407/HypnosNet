@@ -18,7 +18,7 @@ class HypnosNet(nn.Module):
             nn.ReLU()
         )
         self.decoder = nn.Sequential(
-            nn.Linear(3, 6),
+            nn.Linear(3, 7),
             nn.ReLU(),
             nn.Dropout(p=dropout),
         )
