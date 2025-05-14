@@ -35,12 +35,10 @@ def cal_fit_hypnos_loss(hard_lbs_hat, soft_lbs_hat, hard_lbs, sorf_lbs, kl_t, la
 
 
 def cal_eval_metrics(hard_lbs_hat, hard_lbs):
-    lbs_mat = torch.tensor(np.array(LB_MAT), dtype=torch.float32, device=hard_lbs_hat.device)
-    hard_lbs_hat = torch.matmul(hard_lbs_hat, lbs_mat.transpose(0, 1))
-    lbs_hat = torch.nn.functional.softmax(hard_lbs_hat, dim=-1).detach().cpu().numpy()
-    hard_lbs = hard_lbs.detach().cpu().numpy()
-    auroc_score = auroc(hard_lbs, lbs_hat, multi_class='ovr')
-    ap_score = auprc(hard_lbs, lbs_hat)
+    hard_lbs_hat = torch.nn.functional.softmax(hard_lbs_hat, dim=-1).detach().cpu().numpy()
+    hard_lbs = torch.argmax(hard_lbs, dim=-1).detach().cpu().numpy()
+    auroc_score = auroc(hard_lbs, hard_lbs_hat, multi_class='ovr')
+    ap_score = auprc(hard_lbs, hard_lbs_hat)
     f1x = 2 * auroc_score * ap_score / (auroc_score + ap_score + 1e-9)
     return auroc_score, ap_score, f1x
 
