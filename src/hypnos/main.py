@@ -29,7 +29,7 @@ if __name__ == '__main__':
     # define wandb
     wandb.login(key=os.environ["WANDB_API_KEY"])
     wandb.init(
-        mode='disabled',
+        mode='online',
         project="HypnosNet",
         dir=Path(config['logs']['log_dir']).parent.absolute(),
         config=config['train'],
