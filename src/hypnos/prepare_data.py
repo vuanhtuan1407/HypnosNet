@@ -45,7 +45,7 @@ def prepare_data(data_conf, postfix='all', logger=None):
 #                          f"{processed_data_dir}/test_data_{i}.pkl", logger=logger)
 #             metainfo["test_files"].append(f"{processed_data_dir}/test_data_{i}.pkl")
 #
-#     yaml.dump(metainfo, open(f"{processed_data_dir}/metainfo_segment", "w"))
+#     yaml.dump(metainfo, open(f"{processed_data_dir}/metainfo_segment.yaml", "w"))
 #     log('Created metainfo_segment.yaml successfully', logger)
 #
 #
@@ -71,7 +71,7 @@ def prepare_data(data_conf, postfix='all', logger=None):
 #                          f"{processed_data_dir}/test_data_{i}.pkl", logger=logger)
 #             metainfo["test_files"].append(f"{processed_data_dir}/test_data_{i}.pkl")
 #
-#     yaml.dump(metainfo, open(f"{processed_data_dir}/metainfo_windowing", "w"))
+#     yaml.dump(metainfo, open(f"{processed_data_dir}/metainfo_windowing.yaml", "w"))
 #     log('Created metainfo_windowing.yaml successfully', logger)
 
 
@@ -122,7 +122,7 @@ def __prepare_data_all(data_conf, logger=None):
                      logger=logger)
         metainfo["test_files"].append(f"{processed_data_dir}/test_data_{i}.pkl")
 
-    yaml.dump(metainfo, open(f"{processed_data_dir}/metainfo_segment", "w"))
+    yaml.dump(metainfo, open(f"{processed_data_dir}/metainfo.yaml", "w"))
     log('Created metainfo.yaml successfully', logger)
 
 
