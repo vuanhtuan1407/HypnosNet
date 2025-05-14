@@ -55,7 +55,7 @@ def fit_hypnos(fabric, model, train_loader, val_loader, optimizer, config, wandb
                 preds.append(logits)
                 truths.append(lbs_onehot)
 
-            preds = torch.softmax(torch.cat(preds, dim=0), dim=-1)
+            preds = torch.cat(preds, dim=0)
             truths = torch.cat(truths, dim=0)
 
             valid_mask = truths[:, :-1].sum(dim=-1) > 0
