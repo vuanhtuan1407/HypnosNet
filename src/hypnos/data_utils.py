@@ -251,6 +251,14 @@ def split_train_val_random(dataset, ratio=(0.8, 0.2), seed=42):
     return Subset(dataset, train_ids), Subset(dataset, val_ids), train_ids, val_ids
 
 
+def get_train_val_test_file_random(num_files, seed=42):
+    np.random.seed(seed)
+    train_files = np.random.choice(num_files, int(num_files * 0.6), replace=False)
+    val_files = np.random.choice(num_files, int(num_files * 0.2), replace=False)
+    test_files = np.setdiff1d(num_files, np.concatenate([train_files, val_files]))
+    return train_files, val_files, test_files
+
+
 def create_index_mapping(concat_dataset):
     idx_map = {}
     global_idx = 0

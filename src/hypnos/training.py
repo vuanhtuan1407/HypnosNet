@@ -3,11 +3,11 @@ import pandas as pd
 import torch
 from tqdm import tqdm
 
-from src.hypnos.train_utils import cal_kl_mse_cos_entropy_alignment_loss, cal_eval_metrics, get_loader, get_model
+from src.hypnos.train_utils import cal_eval_metrics, get_loader, get_model, cal_fit_hypnos_loss
 from src.hypnos.utils import log
 
 
-def fit_hypnos(fabric, model, train_loader, val_loader, optimizer, config, logger=None, wandb=None):
+def fit_hypnos(fabric, model, train_loader, val_loader, optimizer, config, wandb, logger=None):
     model.train()
     for epoch in range(config['epochs']):
         total_loss = total_samples = 0
@@ -19,10 +19,10 @@ def fit_hypnos(fabric, model, train_loader, val_loader, optimizer, config, logge
         )
         for batch_idx, batch in train_tqdm:
             optimizer.zero_grad()
-            sns, lbs, lbs_vec = batch
-            logits, lbs_align = model(sns, lbs_vec)
+            sns, lbs, lbs_onehot, lbs_vec = batch
+            soft_lbs_hat, hard_lbs_hat = model(sns)
             kl_t = 1 + config['kl_e'] / (epoch + config['kl_e'])
-            loss = cal_kl_mse_cos_entropy_alignment_loss(logits, lbs_align, lbs, kl_t, align_l=0.3)
+            loss = cal_fit_hypnos_loss(hard_lbs_hat, soft_lbs_hat, lbs_onehot, lbs_vec, kl_t, 0.5, 0.5)
             fabric.backward(loss)
 
             # Stuck-Survival Training (Meta AI 2022)
@@ -50,10 +50,10 @@ def fit_hypnos(fabric, model, train_loader, val_loader, optimizer, config, logge
                 disable=config['disable_tqdm']
             )
             for batch_idx, batch in val_tqdm:
-                sns, lbs, _ = batch
-                _, logits = model.predict_raw(sns)
-                preds.append(logits)
-                truths.append(lbs)
+                sns, _, lbs_onehot, _ = batch
+                _, logits = model.predict_hard(sns)
+                preds.append(logits[:, -1])
+                truths.append(lbs_onehot[:, -1])
 
             preds = torch.cat(preds, dim=0)
             truths = torch.cat(truths, dim=0)
@@ -89,11 +89,11 @@ def test(fabric, model, test_loader, config, logger=None):
             disable=config['disable_tqdm']
         )
         for batch_idx, batch in test_tqdm:
-            sns, lbs, _ = batch
-            z, logits = model.predict_raw(sns)
+            sns, _, lbs_onehot, _ = batch
+            z, logits = model.predict_hard(sns)
             zs.append(z)
-            preds.append(logits)
-            truths.append(lbs)
+            preds.append(logits[:, -1])
+            truths.append(lbs_onehot[:, -1])
 
         zs = torch.cat(zs, dim=0)
         preds = torch.cat(preds, dim=0)
@@ -111,7 +111,7 @@ def test(fabric, model, test_loader, config, logger=None):
         np.savetxt(f'{config["out_dir"]}/truths_soft_lbs.txt', truths.detach().cpu().numpy(), fmt='%.4f')
 
 
-def train_model(fabric, model_name, train_dataset, val_dataset, test_dataset, config, logger=None, wandb=None):
+def train_model(fabric, model_name, train_dataset, val_dataset, test_dataset, config, wandb, logger=None):
     train_config = config['train']
     model = get_model(model_name, logger)
     optimizer = torch.optim.Adam(model.parameters(), lr=train_config["lr"])
@@ -123,5 +123,5 @@ def train_model(fabric, model_name, train_dataset, val_dataset, test_dataset, co
 
     # training & testing
     if train_config['model_name'] == 'hypnos':
-        fit_hypnos(fabric, model, train_loader, val_loader, optimizer, train_config, logger)
+        fit_hypnos(fabric, model, train_loader, val_loader, optimizer, train_config, wandb, logger)
     test(fabric, model, test_loader, train_config, logger)

@@ -34,23 +34,23 @@ class EEGDataset(Dataset):
         sns, lbs, lbs_onehot, lbs_vec = [], [], [], []
         for (sn, lb, lb_vec) in self.data:
             sns.append(sn)
-            # lb_onehot = torch.zeros(7, dtype=torch.float32)
+            lb_onehot = torch.zeros(7, dtype=torch.float32)
             lb_idx = lb % 6 if lb != -1 else 6
-            # lb_onehot[lb_idx] = 1.0
-            # lbs_onehot.append(lb_onehot)
+            lb_onehot[lb_idx] = 1.0
+            lbs_onehot.append(lb_onehot)
             lbs.append(lb_idx)
             lbs_vec.append(lb_vec)
 
         self.sns = torch.tensor(np.array(sns), dtype=torch.float32)
         self.lbs = torch.tensor(np.array(lbs), dtype=torch.int32)
-        # self.lbs_onehot = torch.tensor(np.array(lbs_onehot), dtype=torch.float32)
+        self.lbs_onehot = torch.tensor(np.array(lbs_onehot), dtype=torch.float32)
         self.lbs_vec = torch.tensor(np.array(lbs_vec), dtype=torch.float32)
 
     def __len__(self):
         return len(self.data)
 
     def __getitem__(self, idx):
-        return self.sns[idx], self.lbs[idx], self.lbs_vec[idx]
+        return self.sns[idx], self.lbs[idx], self.lbs_onehot[idx], self.lbs_vec[idx]
 
     def get_data(self):
         return self.data

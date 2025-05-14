@@ -1,5 +1,8 @@
+import numpy as np
 import torch
 from torch import nn
+
+from src.hypnos.params import LB_MAT
 
 
 class HypnosNet(nn.Module):
@@ -14,29 +17,30 @@ class HypnosNet(nn.Module):
             nn.Linear(emb_dim * 4, 3),
             nn.ReLU()
         )
-
-        self.lb_aligner = nn.Sequential(
-            nn.Linear(3, 16),
+        self.decoder = nn.Sequential(
+            nn.Linear(3, 6),
             nn.ReLU(),
             nn.Dropout(p=dropout),
-            nn.Linear(16, 3),
-            nn.ReLU(),
-            nn.Softmax(dim=1)
         )
 
-    def forward(self, x, lbs_vec):
+    def forward(self, x):
         x = x[:, :, 0]  # only use the eeg value
         x = self.encoder(x)
-        cls_logits = self.classifier(x)
-        cls_align = self.lb_aligner(cls_logits)
-        lbs_align = self.lb_aligner(lbs_vec)
-        # return cls_logits, lbs_align
-        return cls_align, lbs_align
+        soft_cls = self.classifier(x)
+        hard_cls = self.decoder(soft_cls)
+        return soft_cls, hard_cls
 
-    def predict_raw(self, x):
+    def predict_soft(self, x):
         x = x[:, :, 0]
         x = self.encoder(x)
         cls_logits = self.classifier(x)
+        return x, cls_logits
+
+    def predict_hard(self, x):
+        x = x[:, :, 0]
+        x = self.encoder(x)
+        cls_logits = self.classifier(x)
+        cls_logits = self.decoder(cls_logits)
         return x, cls_logits
 
 

@@ -7,7 +7,6 @@ import yaml
 from dotenv import load_dotenv
 from lightning.fabric import Fabric
 
-from src.hypnos.data_utils import split_train_val_random
 from src.hypnos.dataset import get_dataset
 from src.hypnos.logger import get_logger
 from src.hypnos.params import MODEL_DATASET_MAP
@@ -30,7 +29,7 @@ if __name__ == '__main__':
     # define wandb
     wandb.login(key=os.environ["WANDB_API_KEY"])
     wandb.init(
-        mode='online',
+        mode='disabled',
         project="HypnosNet",
         dir=Path(config['logs']['log_dir']).parent.absolute(),
         config=config['train'],
@@ -53,11 +52,11 @@ if __name__ == '__main__':
     metainfo = yaml.load(open(f"{config['data']['processed_data_dir']}/metainfo.yaml", "r"), Loader=yaml.FullLoader)
 
     train_dataset = get_dataset(metainfo['train_files'][MODEL_DATASET_MAP[model_name]])
-    train_set, val_set, _, _ = split_train_val_random(train_dataset)
+    val_dataset = get_dataset(metainfo['val_files'])
     test_dataset = get_dataset(metainfo['test_files'])
 
     # training
     os.makedirs(config['train']['out_dir'], exist_ok=True)  # create out dir
-    train_model(fabric, model_name, train_set, val_set, test_dataset, config, logger)
+    train_model(fabric, model_name, train_dataset, val_dataset, test_dataset, config, wandb, logger)
 
     wandb.finish()

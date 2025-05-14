@@ -9,41 +9,38 @@ from src.hypnos.params import LB_VEC, LB_MAT
 from src.hypnos.utils import log
 
 
-def cal_masked_ce_loss():
-    pass
+def cal_ce_entropy_loss(hard_lbs_hat, hard_lbs):
+    assert hard_lbs_hat.shape == hard_lbs.shape
+    assert hard_lbs_hat.shape[-1] == 7
+    hard_lbs_hat = torch.nn.functional.softmax(hard_lbs_hat, dim=-1)
+    hard_lbs = torch.argmax(hard_lbs, dim=-1)
+    ce = torch.nn.functional.cross_entropy(hard_lbs_hat, hard_lbs, ignore_index=6)
+    entropy = -(hard_lbs_hat * hard_lbs_hat.clamp(min=1e-8).log()).sum(dim=1).mean()
+    return ce + 0.01 * entropy
 
 
-def cal_sup_con_loss():
-    pass
+def cal_kl_mse_cos_entropy_loss(soft_lbs_hat, soft_lbs, kl_t):
+    log_probs = torch.nn.functional.log_softmax(soft_lbs_hat / kl_t, dim=1)
+    probs = torch.nn.functional.softmax(soft_lbs_hat, dim=1)
+    kl = torch.nn.functional.kl_div(log_probs, soft_lbs, reduction='batchmean') * (kl_t ** 2)
+    mse = torch.nn.functional.mse_loss(probs, soft_lbs)
+    cos = 1 - torch.nn.functional.cosine_similarity(probs, soft_lbs, dim=1).mean()
+    entropy = -(probs * probs.clamp(min=1e-8).log()).sum(dim=1).mean()
+    return kl + 0.3 * mse + 0.05 * cos + 0.01 * entropy
 
 
-def cal_kl_mse_cos_entropy_alignment_loss(logits, lbs_align, lbs, kl_t, align_l=0.1):
-    log_probs = torch.nn.functional.log_softmax(logits / kl_t, dim=1)
-    probs = torch.nn.functional.softmax(logits, dim=1)
-    kl = torch.nn.functional.kl_div(log_probs, lbs_align, reduction='batchmean') * (kl_t ** 2)
-    mse = torch.nn.functional.mse_loss(probs, lbs_align)
-    cos = 1 - torch.nn.functional.cosine_similarity(probs, lbs_align, dim=1).mean()
-    entropy = -(probs.clamp(min=1e-8) * probs.clamp(min=1e-8).log()).sum(dim=1).mean()
-    init_lbs_vec = __get_init_lbs_vec(lbs)
-    alignment = torch.nn.functional.mse_loss(lbs_align, init_lbs_vec)
-    return kl + 0.3 * mse + 0.05 * cos + 0.01 * entropy + align_l * alignment
+def cal_fit_hypnos_loss(hard_lbs_hat, soft_lbs_hat, hard_lbs, sorf_lbs, kl_t, lambda_ce=0.5, lambda_kt=0.5):
+    return (lambda_ce * cal_ce_entropy_loss(hard_lbs_hat, hard_lbs)
+            + lambda_kt * cal_kl_mse_cos_entropy_loss(soft_lbs_hat, sorf_lbs, kl_t))
 
 
-def __get_init_lbs_vec(lbs):
-    init_lbs_vec = []
-    for lb in lbs:
-        init_lbs_vec.append(LB_VEC[lb.item()])
-    return torch.tensor(init_lbs_vec, dtype=torch.float32, device=lbs.device)
-
-
-def cal_eval_metrics(logits, lbs):
-    # ce = torch.nn.functional.cross_entropy(logits, lbs)
-    lbs_mat = torch.tensor(np.array(LB_MAT), dtype=torch.float32, device=logits.device)
-    logits = torch.matmul(logits, lbs_mat.transpose(0, 1))
-    lbs_hat = torch.nn.functional.softmax(logits, dim=-1).detach().cpu().numpy()
-    lbs = lbs.detach().cpu().numpy()
-    auroc_score = auroc(lbs, lbs_hat, multi_class='ovr')
-    ap_score = auprc(lbs, lbs_hat)
+def cal_eval_metrics(hard_lbs_hat, hard_lbs):
+    lbs_mat = torch.tensor(np.array(LB_MAT), dtype=torch.float32, device=hard_lbs_hat.device)
+    hard_lbs_hat = torch.matmul(hard_lbs_hat, lbs_mat.transpose(0, 1))
+    lbs_hat = torch.nn.functional.softmax(hard_lbs_hat, dim=-1).detach().cpu().numpy()
+    hard_lbs = hard_lbs.detach().cpu().numpy()
+    auroc_score = auroc(hard_lbs, lbs_hat, multi_class='ovr')
+    ap_score = auprc(hard_lbs, lbs_hat)
     f1x = 2 * auroc_score * ap_score / (auroc_score + ap_score + 1e-9)
     return auroc_score, ap_score, f1x
 
