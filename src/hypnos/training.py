@@ -52,6 +52,7 @@ def fit_hypnos(fabric, model, train_loader, val_loader, optimizer, config, wandb
             for batch_idx, batch in val_tqdm:
                 sns, _, lbs_onehot, _ = batch
                 _, logits = model.predict_hard(sns)
+                print(logits.shape, lbs_onehot.shape)
                 preds.append(logits[:, -1])
                 truths.append(lbs_onehot[:, -1])
 
