@@ -28,7 +28,7 @@ class HypnosNet(nn.Module):
         x = self.encoder(x)
         soft_cls = self.classifier(x)
         factor = torch.tensor(np.array(LB_MAT), dtype=torch.float32, device=x.device)
-        hard_cls = torch.matmul(factor, soft_cls)
+        hard_cls = torch.matmul(soft_cls, factor.transpose(0, 1))
         # hard_cls = self.decoder(soft_cls)
         return soft_cls, hard_cls
 
@@ -44,7 +44,7 @@ class HypnosNet(nn.Module):
         soft_cls = self.classifier(x)
         # hard_cls = self.decoder(cls_logits)
         factor = torch.tensor(np.array(LB_MAT), dtype=torch.float32, device=x.device)
-        hard_cls = torch.matmul(factor, soft_cls)
+        hard_cls = torch.matmul(soft_cls, factor.transpose(0, 1))
         return x, hard_cls
 
 
