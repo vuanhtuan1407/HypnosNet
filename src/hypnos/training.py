@@ -96,8 +96,8 @@ def test(fabric, model, test_loader, config, logger=None):
             sns, _, lbs_onehot, _ = batch
             z, logits = model.predict_hard(sns)
             zs.append(z)
-            preds.append(logits[:, -1])
-            truths.append(lbs_onehot[:, -1])
+            preds.append(logits)
+            truths.append(lbs_onehot)
 
         zs = torch.cat(zs, dim=0)
         preds = torch.cat(preds, dim=0)
