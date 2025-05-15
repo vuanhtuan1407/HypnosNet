@@ -17,11 +17,15 @@ class HypnosNet(nn.Module):
             nn.Linear(emb_dim * 4, 3),
             nn.ReLU()
         )
-        self.decoder = nn.Sequential(
-            nn.Linear(3, 7),
-            nn.ReLU(),
-            nn.Dropout(p=dropout),
-        )
+
+        factor = torch.tensor(np.array(LB_MAT), dtype=torch.float32, requires_grad=True)
+        self.decoder = nn.Parameter(factor, requires_grad=True)
+
+        # self.decoder = nn.Sequential(
+        #     nn.Linear(3, 7),
+        #     nn.ReLU(),
+        #     nn.Dropout(p=dropout),
+        # )
 
     def forward(self, x):
         x = x[:, :, 0]  # only use the eeg value
@@ -43,9 +47,11 @@ class HypnosNet(nn.Module):
         x = self.encoder(x)
         soft_cls = self.classifier(x)
         # hard_cls = self.decoder(cls_logits)
-        factor = torch.tensor(np.array(LB_MAT), dtype=torch.float32, device=x.device)
-        hard_cls = torch.matmul(soft_cls, factor.transpose(0, 1))
+        # factor = torch.tensor(np.array(LB_MAT), dtype=torch.float32, device=x.device)
+        # hard_cls = torch.matmul(soft_cls, factor.transpose(0, 1))
+        hard_cls = torch.matmul(soft_cls, self.decoder.transpose(0, 1))
         return x, hard_cls
+
 
 
 class Encoder(nn.Module):
