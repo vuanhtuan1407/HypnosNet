@@ -23,7 +23,7 @@ def fit_hypnos(fabric, model, train_loader, val_loader, optimizer, config, wandb
             sns, lbs, lbs_onehot, lbs_vec = batch
             soft_lbs_hat, hard_lbs_hat = model(sns)
             kl_t = 1 + config['kl_e'] / (epoch + config['kl_e'])
-            loss = cal_fit_hypnos_loss(hard_lbs_hat, soft_lbs_hat, lbs_onehot, lbs_vec, kl_t, 0.5, 0.5)
+            loss = cal_fit_hypnos_loss(hard_lbs_hat, soft_lbs_hat, lbs_onehot, lbs_vec, kl_t, 0.1, 1.0)
             fabric.backward(loss)
 
             # Stuck-Survival Training (Meta AI 2022)
