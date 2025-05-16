@@ -10,13 +10,12 @@ from src.hypnos.utils import log
 
 
 def cal_ce_entropy_loss(hard_lbs_hat, hard_lbs):
-    assert hard_lbs_hat.shape == hard_lbs.shape
-    assert hard_lbs_hat.shape[-1] == 7
     hard_lbs_hat = torch.nn.functional.softmax(hard_lbs_hat, dim=-1)
     hard_lbs = torch.argmax(hard_lbs, dim=-1)
-    ce = torch.nn.functional.cross_entropy(hard_lbs_hat, hard_lbs, ignore_index=6)
-    entropy = -(hard_lbs_hat * hard_lbs_hat.clamp(min=1e-8).log()).sum(dim=1).mean()
-    return ce + 0.01 * entropy
+    ce = torch.nn.functional.cross_entropy(hard_lbs_hat, hard_lbs)
+    # entropy = -(hard_lbs_hat * hard_lbs_hat.clamp(min=1e-8).log()).sum(dim=1).mean()
+    # return ce + 0.01 * entropy
+    return ce
 
 
 def cal_kl_mse_cos_entropy_loss(soft_lbs_hat, soft_lbs, kl_t):
