@@ -6,7 +6,7 @@ from src.hypnos.params import LB_MAT
 
 
 class HypnosNet(nn.Module):
-    def __init__(self, win_len=256, hop_len=64, dropout=0.1, cnn_outdim=8, emb_dim=128, scale=0.05):
+    def __init__(self, win_len=256, hop_len=64, dropout=0.1, cnn_outdim=8, emb_dim=128, scale=0.2):
         super().__init__()
         self.scale = scale
         self.encoder = Encoder(win_len, hop_len, dropout, emb_dim, cnn_outdim)
@@ -20,7 +20,7 @@ class HypnosNet(nn.Module):
         )
 
         factor = torch.tensor(np.array(LB_MAT), dtype=torch.float32)
-        self.decoder = nn.Parameter(factor, requires_grad=False)
+        self.decoder = nn.Parameter(factor, requires_grad=True)
 
         # self.decoder = nn.Sequential(
         #     nn.Linear(3, 7),
