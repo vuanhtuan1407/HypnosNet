@@ -27,9 +27,10 @@ def cal_kl_mse_cos_entropy_loss(soft_lbs_hat, soft_lbs, kl_t):
     return kl + 0.3 * mse + 0.05 * cos + 0.01 * entropy
 
 
-def cal_fit_hypnos_loss(hard_lbs_hat, soft_lbs_hat, hard_lbs, sorf_lbs, kl_t, lambda_ce=1, lambda_kt=0.5):
-    return (lambda_ce * cal_ce_entropy_loss(hard_lbs_hat, hard_lbs)
-            + lambda_kt * cal_kl_mse_cos_entropy_loss(soft_lbs_hat, sorf_lbs, kl_t))
+def cal_fit_hypnos_loss(hard_lbs_hat, soft_lbs_hat, hard_lbs, soft_lbs, kl_t, lambda_ce=1, lambda_kt=0.5):
+    # return (lambda_ce * cal_ce_entropy_loss(hard_lbs_hat, hard_lbs)
+    #         + lambda_kt * cal_kl_mse_cos_entropy_loss(soft_lbs_hat, soft_lbs, kl_t))
+    return cal_kl_mse_cos_entropy_loss(soft_lbs_hat, soft_lbs, kl_t)
 
 
 def cal_eval_metrics(hard_lbs_hat, hard_lbs):

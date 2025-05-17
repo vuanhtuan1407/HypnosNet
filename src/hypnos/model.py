@@ -35,11 +35,12 @@ class HypnosNet(nn.Module):
         # hard_cls = self.decoder(soft_cls)
         # factor = torch.tensor(np.array(LB_MAT), dtype=torch.float32, device=x.device)
         # hard_cls = torch.matmul(soft_cls, factor.transpose(0, 1))
-        hard_cls = torch.matmul(
-            torch.nn.functional.normalize(soft_cls, dim=-1),
-            torch.nn.functional.normalize(self.decoder, dim=-1).transpose(0, 1)
-        ) / self.scale
-        return soft_cls, hard_cls
+        # hard_cls = torch.matmul(
+        #     torch.nn.functional.normalize(soft_cls, dim=-1),
+        #     torch.nn.functional.normalize(self.decoder, dim=-1).transpose(0, 1)
+        # ) / self.scale
+        # return soft_cls, hard_cls
+        return soft_cls, None
 
     def predict_soft(self, x):
         x = x[:, :, 0]

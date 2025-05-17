@@ -52,6 +52,6 @@ LB_MAT = [
 ]
 
 MODEL_DATASET_MAP = {
-    'hypnos': 'segment',
+    'hypnos': 'windowing',
     'mc_stft_cnn': 'segment'
 }

@@ -51,7 +51,7 @@ def fit_hypnos(fabric, model, train_loader, val_loader, optimizer, config, wandb
             )
             for batch_idx, batch in val_tqdm:
                 sns, _, lbs_onehot, lbs_vec = batch
-                _, soft_cls, logits = model.predict(sns)
+                _, soft_cls, logits = model.predict_hard(sns)
                 preds.append(logits)
                 truths.append(lbs_onehot)
                 lbs_vecs.append(lbs_vec)
@@ -62,9 +62,9 @@ def fit_hypnos(fabric, model, train_loader, val_loader, optimizer, config, wandb
             lbs_vecs = torch.cat(lbs_vecs, dim=0)
             soft_lbs = torch.cat(soft_lbs, dim=0)
 
-            # valid_mask = truths[:, :-1].sum(dim=-1) > 0
-            # preds = preds[:, :-1][valid_mask]
-            # truths = truths[:, :-1][valid_mask]
+            valid_mask = truths[:, :-1].sum(dim=-1) > 0
+            preds = preds[valid_mask]
+            truths = truths[:, :-1][valid_mask]
             print(preds[:10, :], truths[:10, :], soft_lbs[:10, :],lbs_vecs[:10, :])
             val_auroc, val_ap, val_f1x = cal_eval_metrics(preds, truths)
             log(f"Val AUROC: {val_auroc:.4f} - Val AP: {val_ap:.4f} - Val F1X: {val_f1x:.4f}", logger)
@@ -108,9 +108,9 @@ def test(fabric, model, test_loader, config, logger=None):
         preds = torch.cat(preds, dim=0)
         truths = torch.cat(truths, dim=0)
 
-        # valid_mask = truths[:, :-1].sum(dim=-1) > 0
-        # preds = preds[:, :-1][valid_mask]
-        # truths = truths[:, :-1][valid_mask]
+        valid_mask = truths[:, :-1].sum(dim=-1) > 0
+        preds = preds[valid_mask]
+        truths = truths[:, :-1][valid_mask]
         test_auroc, test_ap, test_f1x = cal_eval_metrics(preds, truths)
         log(f"Test AUROC: {test_auroc:.4f} - Test AP: {test_ap:.4f} - Test F1X: {test_f1x:.4f}", logger)
         np.save(f'{config["out_dir"]}/latent_encode.npy', zs.detach().cpu().numpy())
