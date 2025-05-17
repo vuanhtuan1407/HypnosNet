@@ -20,7 +20,7 @@ class HypnosNet(nn.Module):
         )
 
         factor = torch.tensor(np.array(LB_MAT), dtype=torch.float32)
-        self.decoder = nn.Parameter(factor, requires_grad=True)
+        self.decoder = nn.Parameter(factor, requires_grad=False)
 
         # self.decoder = nn.Sequential(
         #     nn.Linear(3, 7),
