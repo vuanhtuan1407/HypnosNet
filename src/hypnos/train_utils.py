@@ -10,7 +10,6 @@ from src.hypnos.utils import log
 
 
 def cal_ce_entropy_loss(hard_lbs_hat, hard_lbs):
-    hard_lbs_hat = torch.nn.functional.softmax(hard_lbs_hat, dim=-1)
     hard_lbs = torch.argmax(hard_lbs, dim=-1)
     ce = torch.nn.functional.cross_entropy(hard_lbs_hat, hard_lbs)
     # entropy = -(hard_lbs_hat * hard_lbs_hat.clamp(min=1e-8).log()).sum(dim=1).mean()
