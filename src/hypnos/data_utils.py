@@ -187,7 +187,7 @@ def generate_data_windowing_v2(signal_file, label_file, target_file, SEP='\t', l
             lb_vec = (
                     np.array(LB_VEC[lb_phs[0]], dtype=np.float32) * (trans_point - s_idx * 0.5)
                     + np.array(LB_VEC[lb_phs[1]], dtype=np.float32) * (e_idx * 0.5 - trans_point)
-            )
+            ) / 4.0
             lbs_vec.append(lb_vec)
 
     sns_new = np.array(sns_new).astype(np.float32)
