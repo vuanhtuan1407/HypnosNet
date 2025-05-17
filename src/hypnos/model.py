@@ -6,8 +6,9 @@ from src.hypnos.params import LB_MAT
 
 
 class HypnosNet(nn.Module):
-    def __init__(self, win_len=256, hop_len=64, dropout=0.1, cnn_outdim=8, emb_dim=128):
+    def __init__(self, win_len=256, hop_len=64, dropout=0.1, cnn_outdim=8, emb_dim=128, scale=0.05):
         super().__init__()
+        self.scale = scale
         self.encoder = Encoder(win_len, hop_len, dropout, emb_dim, cnn_outdim)
 
         self.classifier = nn.Sequential(
@@ -19,7 +20,7 @@ class HypnosNet(nn.Module):
         )
 
         factor = torch.tensor(np.array(LB_MAT), dtype=torch.float32)
-        self.decoder = nn.Parameter(factor, requires_grad=True)
+        self.decoder = nn.Parameter(factor, requires_grad=False)
 
         # self.decoder = nn.Sequential(
         #     nn.Linear(3, 7),
@@ -34,7 +35,10 @@ class HypnosNet(nn.Module):
         # hard_cls = self.decoder(soft_cls)
         # factor = torch.tensor(np.array(LB_MAT), dtype=torch.float32, device=x.device)
         # hard_cls = torch.matmul(soft_cls, factor.transpose(0, 1))
-        hard_cls = torch.matmul(soft_cls, self.decoder.transpose(0, 1))
+        hard_cls = torch.matmul(
+            torch.nn.functional.normalize(soft_cls, dim=-1),
+            torch.nn.functional.normalize(self.decoder, dim=-1).transpose(0, 1)
+        ) / self.scale
         return soft_cls, hard_cls
 
     def predict_soft(self, x):
@@ -50,10 +54,14 @@ class HypnosNet(nn.Module):
         # hard_cls = self.decoder(cls_logits)
         # factor = torch.tensor(np.array(LB_MAT), dtype=torch.float32, device=x.device)
         # hard_cls = torch.matmul(soft_cls, factor.transpose(0, 1))
-        hard_cls = torch.matmul(soft_cls, self.decoder.transpose(0, 1))
+        # hard_cls = torch.matmul(soft_cls, self.decoder.transpose(0, 1))
+        hard_cls = torch.matmul(
+            torch.nn.functional.normalize(soft_cls, dim=-1),
+            torch.nn.functional.normalize(self.decoder, dim=-1).transpose(0, 1)
+        ) / self.scale
         return x, hard_cls
 
-    def soft_represent(self):
+    def soft_mat(self):
         print(self.decoder.item())
 
 
