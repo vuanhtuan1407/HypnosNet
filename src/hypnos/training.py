@@ -26,7 +26,7 @@ def fit_hypnos(fabric, model, train_loader, val_loader, optimizer, config, wandb
             loss = cal_fit_hypnos_loss(hard_lbs_hat, soft_lbs_hat, lbs_onehot, lbs_vec, kl_t, 0.1, 1.0)
             fabric.backward(loss)
 
-            # Stuck-Survival Training (Meta AI 2022)
+            # Stuck-Survival Training
             for n, p in model.named_parameters():
                 if p.grad is not None:
                     p.grad += torch.randn_like(p.grad) * config.get('sst_noise', 1e-4)
@@ -61,6 +61,7 @@ def fit_hypnos(fabric, model, train_loader, val_loader, optimizer, config, wandb
             # valid_mask = truths[:, :-1].sum(dim=-1) > 0
             # preds = preds[:, :-1][valid_mask]
             # truths = truths[:, :-1][valid_mask]
+            print(preds.shape, truths.shape)
             val_auroc, val_ap, val_f1x = cal_eval_metrics(preds, truths)
             log(f"Val AUROC: {val_auroc:.4f} - Val AP: {val_ap:.4f} - Val F1X: {val_f1x:.4f}", logger)
             wandb.log({'val/auroc': val_auroc, 'val/ap': val_ap, 'val/f1x': val_f1x}, step=epoch)
